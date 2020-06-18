@@ -21,10 +21,29 @@ class SecondMenu(Window):
         self.last.resize(80, 80)
         self.last.move(0, 0)
         self.last.set_func(self.GoToLast)
+        self.up_left = Button(self, "data\\Sprites\\add_1.png")
+        self.up_left.resize(256, 160)
+        self.up_left.move(10, 151)
+        self.up_left.set_func(self.go_next)
+        self.up_right = Button(self, "data\\Sprites\\add_1.png")
+        self.up_right.resize(256, 160)
+        self.up_right.move(374, 151)
+        self.up_right.set_func(self.go_next)
+        self.down_left = Button(self, "data\\Sprites\\add_1.png")
+        self.down_left.resize(256, 160)
+        self.down_left.move(10, 329)
+        self.down_left.set_func(self.go_next)
+        self.down_right = Button(self, "data\\Sprites\\add_1.png")
+        self.down_right.resize(256, 160)
+        self.down_right.move(374, 329)
+        self.down_right.set_func(self.go_next)
         self.set_background('data\\Sprites\\bg.jpg')
 
     def GoToLast(self):
         self.running = False
+
+    def go_next(self):
+        pass
 
     def run(self):
         while self.running:
