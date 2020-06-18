@@ -1,6 +1,7 @@
 import pygame
 from ..Window import Window
 from ..Button import Button
+from ..Melodie import Melodie
 import sys
 
 
@@ -43,7 +44,7 @@ class SecondMenu(Window):
         self.running = False
 
     def go_next(self):
-        pass
+        Melodie()
 
     def run(self):
         while self.running:
