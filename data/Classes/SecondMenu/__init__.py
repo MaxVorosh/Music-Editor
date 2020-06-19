@@ -2,7 +2,9 @@ import pygame
 from ..Window import Window
 from ..Button import Button
 from ..Melodie import Melodie
+from ..Name import Name
 import sys
+import sqlite3
 
 
 class SecondMenu(Window):
@@ -22,29 +24,37 @@ class SecondMenu(Window):
         self.last.resize(80, 80)
         self.last.move(0, 0)
         self.last.set_func(self.GoToLast)
-        self.up_left = Button(self, "data\\Sprites\\add_1.png")
-        self.up_left.resize(256, 160)
-        self.up_left.move(10, 151)
-        self.up_left.set_func(self.go_next)
-        self.up_right = Button(self, "data\\Sprites\\add_1.png")
-        self.up_right.resize(256, 160)
-        self.up_right.move(374, 151)
-        self.up_right.set_func(self.go_next)
-        self.down_left = Button(self, "data\\Sprites\\add_1.png")
-        self.down_left.resize(256, 160)
-        self.down_left.move(10, 329)
-        self.down_left.set_func(self.go_next)
-        self.down_right = Button(self, "data\\Sprites\\add_1.png")
-        self.down_right.resize(256, 160)
-        self.down_right.move(374, 329)
-        self.down_right.set_func(self.go_next)
+        self.melodies = []
+        con = sqlite3.connect('data\\db\\Melodies.db')
+        cur = con.cursor()
+        result = cur.execute("SELECT name FROM Melodies").fetchall()
+        length = len(result)
+        for i in range(length):
+            if i % 2 == 0:
+                btn = Button(self, "data\\Sprites\\add_1.png")
+                btn.resize(256, 160)
+                btn.move(10, 150 + i // 2 * 170)
+                btn.set_func(self.go_next)
+            else:
+                btn = Button(self, "data\\Sprites\\add_1.png")
+                btn.resize(256, 160)
+                btn.move(375, 150 + i // 2 * 170)
+                btn.set_func(self.go_next)
+            self.melodies.append(btn)
+        add = Button(self, "data\\Sprites\\add_1.png")
+        add.resize(256, 160)
+        add.move(10 + length % 2 * 365, 150 + length // 2 * 170)
+        add.set_func(self.go_next)
+        self.melodies.append(add)
         self.set_background('data\\Sprites\\bg.jpg')
 
     def GoToLast(self):
         self.running = False
 
     def go_next(self):
-        Melodie()
+        n = Name()
+        if n.string:
+            Melodie()
 
     def run(self):
         while self.running:
