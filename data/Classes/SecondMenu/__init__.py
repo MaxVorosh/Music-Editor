@@ -58,7 +58,8 @@ class SecondMenu(Window):
         if n.string:
             k = KeyWindow(n.string)
             if k.is_do:
-                Melodie()
+                print(k.id)
+                Melodie(k.id)
                 self.running = False
                 self.ui()
                 self.running = True

@@ -5,9 +5,10 @@ from ..Button import Button
 
 
 class Melodie(Window):
-    def __init__(self):
+    def __init__(self, id):
         super().__init__()
         self.running = True
+        self.id = id
         self.ui()
         self.run()
 

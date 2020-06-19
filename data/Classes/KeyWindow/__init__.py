@@ -62,6 +62,8 @@ class KeyWindow(Window):
         cur = con.cursor()
         cur.execute('INSERT INTO Melodies (is_violin, name) VALUES (True, "' + self.name + '")')
         con.commit()
+        res = cur.execute('SELECT id FROM Melodies').fetchall()
+        self.id = res[-1][0]
         con.close()
         self.is_do = True
         self.running = False
@@ -71,6 +73,8 @@ class KeyWindow(Window):
         cur = con.cursor()
         cur.execute('INSERT INTO Melodies (is_violin, name) VALUES (False, "' + self.name + '")')
         con.commit()
+        res = cur.execute('SELECT id FROM Melodies').fetchall()
+        self.id = res[-1][0]
         con.close()
         self.is_do = True
         self.running = False
