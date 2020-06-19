@@ -138,4 +138,5 @@ class Name(Window):
         self.running = False
 
     def GoToNext(self):
-        self.running = False
+        if not self.is_nool:
+            self.running = False

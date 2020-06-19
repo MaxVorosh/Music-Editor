@@ -1,4 +1,4 @@
-from data.Classes.Name import Name
+from data.Classes.KeyWindow import KeyWindow
 
 
-n = Name()
+n = KeyWindow('adseqf')

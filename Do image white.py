@@ -1,15 +1,15 @@
 from PIL import Image
 
-img = Image.open('data\\Sprites\\accept.png')
+img = Image.open('data\\Sprites\\bass.jpg')
 img = img.convert("RGBA")
 datas = img.getdata()
 
 newData = []
 for item in datas:
-    if item[0] != 0:
-        newData.append((255, 255, 255, 0))
-    else:
+    if item[3] != 0:
         newData.append((255, 255, 255, 255))
+    else:
+        newData.append(item)
 
 img.putdata(newData)
-img.save("data\\Sprites\\accept.png", "PNG")
+img.save("data\\Sprites\\bass.png", "PNG")
