@@ -4,6 +4,7 @@ from ..Button import Button
 from ..Melodie import Melodie
 from ..Name import Name
 from ..KeyWindow import KeyWindow
+from data.Functions.make_fon_by_rect import make_fon_by_rect
 import sys
 import sqlite3
 
@@ -28,24 +29,26 @@ class SecondMenu(Window):
         self.melodies = []
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
-        result = cur.execute("SELECT name FROM Melodies").fetchall()
+        result = cur.execute("SELECT id, name FROM Melodies").fetchall()
+        self.ids = [i[0] for i in result]
+        self.names = [i[1] for i in result]
         con.close()
-        length = len(result)
-        for i in range(length):
+        self.length = len(result)
+        for i in range(self.length):
             if i % 2 == 0:
-                btn = Button(self, "data\\Sprites\\add_1.png")
+                btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
-                btn.move(10, 150 + i // 2 * 170)
+                btn.move(10, 100 + i // 2 * 170)
                 btn.set_func(self.go_to_melody)
             else:
-                btn = Button(self, "data\\Sprites\\add_1.png")
+                btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
-                btn.move(375, 150 + i // 2 * 170)
+                btn.move(375, 100 + i // 2 * 170)
                 btn.set_func(self.go_to_melody)
             self.melodies.append(btn)
         add = Button(self, "data\\Sprites\\add_1.png")
         add.resize(256, 160)
-        add.move(10 + length % 2 * 365, 150 + length // 2 * 170)
+        add.move(10 + self.length % 2 * 365, 100 + self.length // 2 * 170)
         add.set_func(self.go_next)
         self.melodies.append(add)
         self.set_background('data\\Sprites\\bg.jpg')
@@ -58,12 +61,9 @@ class SecondMenu(Window):
         if n.string:
             k = KeyWindow(n.string)
             if k.is_do:
-                print(k.id)
                 Melodie(k.id)
                 self.running = False
-                self.ui()
-                self.running = True
-                self.run()
+                m = SecondMenu()
             else:
                 self.go_next()
 
@@ -79,6 +79,13 @@ class SecondMenu(Window):
             if self.background:
                 self.screen.blit(self.background, (0, 0))
             self.sprites.draw(self.screen)
+            for i in range(self.length):
+                if i % 2 == 0:
+                    make_fon_by_rect(self.screen, self.names[i].split('\n'), 10, 266, 100 + i // 2 * 170,
+                                     100 + i // 2 * 170 + 160)
+                else:
+                    make_fon_by_rect(self.screen, self.names[i].split('\n'), 375, 631, 100 + i // 2 * 170,
+                                     100 + i // 2 * 170 + 160)
             pygame.display.flip()
 
     def exitFunc(self):
