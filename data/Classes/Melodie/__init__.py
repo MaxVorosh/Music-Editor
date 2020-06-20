@@ -126,17 +126,47 @@ class Melodie(Window):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.click(event.pos)
+                if event.type == pygame.KEYDOWN:
+                    if 3 <= self.stage <= 4:
+                        chis = -1
+                        if event.key == pygame.K_2:
+                            chis = 2
+                        if event.key == pygame.K_3:
+                            chis = 3
+                        if event.key == pygame.K_4:
+                            chis = 4
+                        if event.key == pygame.K_6:
+                            chis = 6
+                        if event.key == pygame.K_8:
+                            chis = 8
+                        if chis != -1:
+                            if self.down == 0 and (chis == 4 or chis == 8):
+                                self.down = chis
+                                self.stage = 4
+                            elif self.down != 0:
+                                if chis <= self.down:
+                                    self.up = chis
+                                    self.stage = 5
             self.screen.fill((255, 255, 255))
-            if self.background:
-                self.screen.blit(self.background, (0, 0))
+            # if self.background:
+            #     self.screen.blit(self.background, (0, 0))
+            self.staves.draw(self.screen)
             if self.stage == 0:
                 make_fon_by_rect(self.screen, ['Выберите символ слева или справа', 'для построения лесенки'], 140, 480,
                                  0, 80, 'black')
+            if 3 <= self.stage <= 4:
+                make_fon_by_rect(self.screen, ['С помощью цифр на клавиатуре', 'выберите размер такта.',
+                                               'Первое число пойдёт вниз, второе - вверх'], 140, 480, 0, 80, 'black')
+            if self.up != 0:
+                make_fon_by_rect(self.screen, [str(self.up)], 80 + (self.sharps + self.flats) * 15 + 5,
+                                 80 + (self.sharps + self.flats) * 15 + 19, 130, 144, 'black', 56)
+            if self.down != 0:
+                make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
+                                 80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
             for i in range(self.sharps):
                 self.stair.add(Note('sharp', 0, 80 + i * 15, self.sharp_on_stair[i] - 15))
             for i in range(self.flats):
                 self.stair.add(Note('flat', 0, 80 + i * 15, self.flat_on_stair[i] - 22))
-            self.staves.draw(self.screen)
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             pygame.display.flip()
@@ -156,18 +186,19 @@ class Melodie(Window):
     def next_stage(self):
         self.accept.kill()
         self.reject.kill()
+        self.stage = 3
 
     def add_symb(self):
         if self.stage == 1:
             self.sharps += 1
             if self.sharps == 7:
                 self.next_stage()
-                self.stage = 3
+                self.stage = 4
         if self.stage == 2:
             self.flats += 1
             if self.flats == 7:
                 self.next_stage()
-                self.stage = 3
+                self.stage = 4
 
     def first_flat(self):
         self.sharp.kill()
@@ -182,7 +213,7 @@ class Melodie(Window):
         self.get_stair()
 
     def get_stair(self):
-        if self.stage == 3:
+        if self.stage >= 3:
             pass
         else:
             self.accept = Button(self, 'data\\Sprites\\accept_black.png')

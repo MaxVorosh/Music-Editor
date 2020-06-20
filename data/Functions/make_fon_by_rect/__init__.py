@@ -2,9 +2,9 @@ import pygame
 from ..load import load
 
 
-def make_fon_by_rect(screen, intro_text, x1, x2, y1, y2, color_name):
+def make_fon_by_rect(screen, intro_text, x1, x2, y1, y2, color_name, font_size=30):
     pygame.init()
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font(None, font_size)
     text_coord = (y2 + y1) // 2 - (len(intro_text) * 21 + (len(intro_text) - 1) * 10) // 2
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color(color_name))
