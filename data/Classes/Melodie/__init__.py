@@ -22,7 +22,9 @@ class Melodie(Window):
         self.flats = melodie[3]
         self.body = melodie[4]
         self.name = melodie[5]
-        self.stage = 0
+        self.up = melodie[6]
+        self.down = melodie[7]
+        self.stage = melodie[8]
         self.stair = pygame.sprite.Group()
         self.ui()
         self.run()
@@ -41,14 +43,17 @@ class Melodie(Window):
         self.last.resize(80, 80)
         self.last.move(560, 0)
         self.last.set_func(self.exitFunc)
-        self.sharp = Button(self, 'data\\Sprites\\sharp.png')
-        self.sharp.resize(20, 40)
-        self.sharp.move(100, 20)
-        self.sharp.set_func(self.first_sharp)
-        self.flat = Button(self, 'data\\Sprites\\flat.png')
-        self.flat.resize(20, 40)
-        self.flat.move(500, 20)
-        self.flat.set_func(self.first_flat)
+        if self.stage == 0:
+            self.sharp = Button(self, 'data\\Sprites\\sharp.png')
+            self.sharp.resize(20, 40)
+            self.sharp.move(100, 20)
+            self.sharp.set_func(self.first_sharp)
+            self.flat = Button(self, 'data\\Sprites\\flat.png')
+            self.flat.resize(20, 40)
+            self.flat.move(500, 20)
+            self.flat.set_func(self.first_flat)
+        else:
+            self.get_stair()
         self.keys = [Key(self, self.is_violin, -10, 140), Key(self, self.is_violin, -10, 260),
                      Key(self, self.is_violin, -10, 380)]
         self.notes = {'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'A#': [], 'C#': [], 'D#': [],
@@ -124,25 +129,20 @@ class Melodie(Window):
             self.screen.fill((255, 255, 255))
             if self.background:
                 self.screen.blit(self.background, (0, 0))
-            # self.staves.draw(self.screen)
             if self.stage == 0:
                 make_fon_by_rect(self.screen, ['Выберите символ слева или справа', 'для построения лесенки'], 140, 480,
                                  0, 80, 'black')
-            if self.stage == 1:
-                for i in range(self.sharps):
-                    self.stair.add(Note('sharp', 0, 80 + i * 15, self.sharp_on_stair[i] - 15))
-            if self.stage == 2:
-                for i in range(self.flats):
-                    self.stair.add(Note('flat', 0, 80 + i * 15, self.flat_on_stair[i] - 22))
-                    # pygame.draw.circle(self.screen, pygame.Color('green'),
-                    #                    (80 + i * 10, self.note_y[self.note_on_stair[6 - i]]), 5)
+            for i in range(self.sharps):
+                self.stair.add(Note('sharp', 0, 80 + i * 15, self.sharp_on_stair[i] - 15))
+            for i in range(self.flats):
+                self.stair.add(Note('flat', 0, 80 + i * 15, self.flat_on_stair[i] - 22))
             self.staves.draw(self.screen)
-            # pygame.draw.circle(self.screen, pygame.Color('green'), (100, self.note_y['A']), 5)
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             pygame.display.flip()
 
     def exitFunc(self):
+        self.save()
         pygame.quit()
         sys.exit()
 
@@ -150,6 +150,7 @@ class Melodie(Window):
         pass
 
     def GoToLast(self):
+        self.save()
         self.running = False
 
     def next_stage(self):
@@ -161,27 +162,44 @@ class Melodie(Window):
             self.sharps += 1
             if self.sharps == 7:
                 self.next_stage()
+                self.stage = 3
         if self.stage == 2:
             self.flats += 1
             if self.flats == 7:
                 self.next_stage()
+                self.stage = 3
 
     def first_flat(self):
+        self.sharp.kill()
+        self.flat.kill()
         self.stage = 2
         self.get_stair()
 
     def first_sharp(self):
+        self.sharp.kill()
+        self.flat.kill()
         self.stage = 1
         self.get_stair()
 
     def get_stair(self):
-        self.accept = Button(self, 'data\\Sprites\\accept_black.png')
-        self.accept.resize(80, 80)
-        self.accept.move(187, 0)
-        self.accept.set_func(self.add_symb)
-        self.reject = Button(self, 'data\\Sprites\\reject.png')
-        self.reject.resize(80, 80)
-        self.reject.move(374, 0)
-        self.reject.set_func(self.next_stage)
-        self.sharp.kill()
-        self.flat.kill()
+        if self.stage == 3:
+            pass
+        else:
+            self.accept = Button(self, 'data\\Sprites\\accept_black.png')
+            self.accept.resize(80, 80)
+            self.accept.move(187, 0)
+            self.accept.set_func(self.add_symb)
+            self.reject = Button(self, 'data\\Sprites\\reject.png')
+            self.reject.resize(80, 80)
+            self.reject.move(374, 0)
+            self.reject.set_func(self.next_stage)
+
+    def save(self):
+        con = sqlite3.connect('data\\db\\Melodies.db')
+        cur = con.cursor()
+        text = ('UPDATE Melodies\nSET is_violin = ' + str(self.is_violin) + ', sharp = ' + str(self.sharps) +
+                ', flat = ' + str(self.flats) + ', body = "' + str(self.body) + '", tact = ' + str(self.tact) +
+                ', stage = ' + str(self.stage) + '\nWHERE id = ' + str(self.id))
+        cur.execute(text)
+        con.commit()
+        con.close()
