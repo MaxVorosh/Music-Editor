@@ -198,7 +198,8 @@ class Melodie(Window):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         text = ('UPDATE Melodies\nSET is_violin = ' + str(self.is_violin) + ', sharp = ' + str(self.sharps) +
-                ', flat = ' + str(self.flats) + ', body = "' + str(self.body) + '", tact = ' + str(self.tact) +
+                ', flat = ' + str(self.flats) + ', body = "' + str(self.body) + '", up = ' + str(self.up) +
+                ', down = ' + str(self.down) +
                 ', stage = ' + str(self.stage) + '\nWHERE id = ' + str(self.id))
         cur.execute(text)
         con.commit()
