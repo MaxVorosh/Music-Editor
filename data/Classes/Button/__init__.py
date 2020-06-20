@@ -8,6 +8,7 @@ class Button(pygame.sprite.Sprite):
         self.set_image(path)
         self.rect = self.image.get_rect()
         self.func = None
+        self.args = []
 
     def resize(self, width, height):
         self.image = pygame.transform.scale(self.image, (width, height))
@@ -21,8 +22,9 @@ class Button(pygame.sprite.Sprite):
         self.image = pygame.image.load(path)
         self.rect = self.image.get_rect()
 
-    def set_func(self, func):
+    def set_func(self, func, *args):
         self.func = func
+        self.args = args[:]
 
     def check_clicked(self, mouse_pos):
         if self.rect.x <= mouse_pos[0] <= self.rect.x + self.rect.width and \
@@ -32,4 +34,4 @@ class Button(pygame.sprite.Sprite):
             return False
 
     def clicked(self):
-        self.func()
+        self.func(*self.args)

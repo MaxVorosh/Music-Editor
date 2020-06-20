@@ -39,12 +39,12 @@ class SecondMenu(Window):
                 btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
                 btn.move(10, 100 + i // 2 * 185)
-                btn.set_func(self.go_to_melody)
+                btn.set_func(self.go_to_melody, self.ids[i])
             else:
                 btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
                 btn.move(375, 100 + i // 2 * 185)
-                btn.set_func(self.go_to_melody)
+                btn.set_func(self.go_to_melody, self.ids[i])
             self.melodies.append(btn)
         add = Button(self, "data\\Sprites\\add_1.png")
         add.resize(256, 160)
@@ -99,15 +99,15 @@ class SecondMenu(Window):
             for i in range(start, self.length):
                 if i % 2 == 0:
                     make_fon_by_rect(self.screen, self.names[i].split('\n'), 10, 266, 100 + (i - start) // 2 * 185,
-                                     100 + (i - start) // 2 * 185 + 160)
+                                     100 + (i - start) // 2 * 185 + 160, 'white')
                 else:
                     make_fon_by_rect(self.screen, self.names[i].split('\n'), 375, 631, 100 + (i - start) // 2 * 185,
-                                     100 + (i - start) // 2 * 185 + 160)
+                                     100 + (i - start) // 2 * 185 + 160, 'white')
             pygame.display.flip()
 
     def exitFunc(self):
         pygame.quit()
         sys.exit()
 
-    def go_to_melody(self):
-        pass
+    def go_to_melody(self, id):
+        Melodie(id)
