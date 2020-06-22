@@ -56,6 +56,8 @@ class Melodie(Window):
             self.get_stair()
         self.keys = [Key(self, self.is_violin, -10, 140), Key(self, self.is_violin, -10, 260),
                      Key(self, self.is_violin, -10, 380)]
+        for key in self.keys:
+            key.set_func(key.update, self.stage)
         self.notes = {'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'A#': [], 'C#': [], 'D#': [],
                       'F#': [], 'G#': []}
         self.up_note_y = {'B': 170, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 177}
@@ -70,52 +72,57 @@ class Melodie(Window):
             D = Button(self, 'data\\Sprites\\D.png')
             D.resize(24, 124)
             D.move(31 + i * 154, 506)
-            D.set_func(self.add_note)
+            D.set_func(self.add_note, 'D', i + 1)
             self.notes['D'].append(D)
             E = Button(self, 'data\\Sprites\\E.png')
             E.resize(23, 124)
             E.move(55 + i * 154, 506)
-            E.set_func(self.add_note)
+            E.set_func(self.add_note, 'E', i + 1)
             self.notes['E'].append(E)
             F = Button(self, 'data\\Sprites\\F.png')
             F.resize(21, 123)
             F.move(76 + i * 154, 507)
-            F.set_func(self.add_note)
+            F.set_func(self.add_note, 'F', i + 1)
             self.notes['F'].append(F)
             G = Button(self, 'data\\Sprites\\G.png')
             G.resize(24, 105)
             G.move(97 + i * 154, 525)
-            G.set_func(self.add_note)
+            G.set_func(self.add_note, 'G', i + 1)
             self.notes['G'].append(G)
             A = Button(self, 'data\\Sprites\\A.png')
             A.resize(21, 122)
             A.move(121 + i * 154, 508)
-            A.set_func(self.add_note)
+            A.set_func(self.add_note, 'A', i + 1)
             self.notes['A'].append(A)
             B = Button(self, 'data\\Sprites\\B.png')
             B.resize(22, 133)
             B.move(142 + i * 154, 497)
-            B.set_func(self.add_note)
+            B.set_func(self.add_note, 'B', i + 1)
             self.notes['B'].append(B)
             C_ = Button(self, 'data\\Sprites\\black.png')
             C_.resize(15, 67)
             C_.move(23 + i * 154, 510)
+            # C_.set_func(self.add_note, 'CD')
             self.notes['C#'].append(C_)
             D_ = Button(self, 'data\\Sprites\\black.png')
             D_.resize(15, 67)
             D_.move(50 + i * 154, 510)
+            # D_.set_func(self.add_note, 'DE')
             self.notes['D#'].append(D_)
             F_ = Button(self, 'data\\Sprites\\black.png')
             F_.resize(15, 67)
             F_.move(89 + i * 154, 510)
+            # F_.set_func(self.add_note, 'FG')
             self.notes['F#'].append(F_)
             G_ = Button(self, 'data\\Sprites\\black.png')
             G_.resize(15, 67)
             G_.move(114 + i * 154, 510)
+            # G_.set_func(self.add_note, 'GA')
             self.notes['G#'].append(G_)
             A_ = Button(self, 'data\\Sprites\\black.png')
             A_.resize(15, 67)
             A_.move(140 + i * 154, 510)
+            # A_.set_func(self.add_note, 'AB')
             self.notes['A#'].append(A_)
 
     def run(self):
@@ -147,6 +154,8 @@ class Melodie(Window):
                                 if chis <= self.down:
                                     self.up = chis
                                     self.stage = 5
+                                    for key in self.keys:
+                                        key.set_func(key.update, self.stage)
             self.screen.fill((255, 255, 255))
             # if self.background:
             #     self.screen.blit(self.background, (0, 0))
@@ -176,7 +185,7 @@ class Melodie(Window):
         pygame.quit()
         sys.exit()
 
-    def add_note(self):
+    def add_note(self, notes, oct):
         pass
 
     def GoToLast(self):

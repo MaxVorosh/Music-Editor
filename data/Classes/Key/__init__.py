@@ -20,21 +20,21 @@ class Key(Button):
             self.y -= 15
             self.resize(90, 90)
         self.move(self.x, self.y)
-        self.func = self.update
 
-    def update(self):
-        for key in self.window.keys:
-            key.is_violin = not key.is_violin
-            if key.is_violin:
-                key.set_image("data\\Sprites\\violin_black.png")
-            else:
-                key.set_image("data\\Sprites\\bass_black.png")
-            if not key.is_violin:
-                key.x += 10
-                key.y += 15
-                key.resize(60, 60)
-            else:
-                key.x -= 10
-                key.y -= 15
-                key.resize(90, 90)
-            key.move(key.x, key.y)
+    def update(self, stage):
+        if stage < 5:
+            for key in self.window.keys:
+                key.is_violin = not key.is_violin
+                if key.is_violin:
+                    key.set_image("data\\Sprites\\violin_black.png")
+                else:
+                    key.set_image("data\\Sprites\\bass_black.png")
+                if not key.is_violin:
+                    key.x += 10
+                    key.y += 15
+                    key.resize(60, 60)
+                else:
+                    key.x -= 10
+                    key.y -= 15
+                    key.resize(90, 90)
+                key.move(key.x, key.y)
