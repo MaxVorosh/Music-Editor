@@ -6,6 +6,7 @@ from ..Button import Button
 from ..Key import Key
 from ..Stave import Stave
 from ..Note import Note
+from ..ClickedNote import ClickedNote
 from data.Functions.make_fon_by_rect import make_fon_by_rect
 
 
@@ -20,12 +21,14 @@ class Melodie(Window):
         self.is_violin = melodie[1]
         self.sharps = melodie[2]
         self.flats = melodie[3]
-        self.body = melodie[4]
+        self.body = [i.split() for i in melodie[4].split(';')]
         self.name = melodie[5]
         self.up = melodie[6]
         self.down = melodie[7]
         self.stage = melodie[8]
+        self.line = melodie[9]
         self.stair = pygame.sprite.Group()
+        self.note_group = pygame.sprite.Group()
         self.ui()
         self.run()
 
@@ -54,6 +57,10 @@ class Melodie(Window):
             self.flat.set_func(self.first_flat)
         else:
             self.get_stair()
+        data = ['full', 'half', 'quater', 'small', 'very small']
+        self.clicked_notes = []
+        for i in range(5):
+            ClickedNote(self, data[i], 100 + i * 50, 0, 1 / 2 ** i)
         self.keys = [Key(self, self.is_violin, -10, 140), Key(self, self.is_violin, -10, 260),
                      Key(self, self.is_violin, -10, 380)]
         for key in self.keys:
@@ -67,7 +74,7 @@ class Melodie(Window):
             C = Button(self, 'data\\Sprites\\C.png')
             C.resize(21, 122)
             C.move(10 + i * 154, 508)
-            C.set_func(self.add_note)
+            C.set_func(self.add_note, 'C', i + 1)
             self.notes['C'].append(C)
             D = Button(self, 'data\\Sprites\\D.png')
             D.resize(24, 124)
@@ -133,6 +140,9 @@ class Melodie(Window):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.click(event.pos)
+                    for note in self.note_group:
+                        if note.check_clicked(event.pos):
+                            note.clicked()
                 if event.type == pygame.KEYDOWN:
                     if 3 <= self.stage <= 4:
                         chis = -1
@@ -157,8 +167,6 @@ class Melodie(Window):
                                     for key in self.keys:
                                         key.set_func(key.update, self.stage)
             self.screen.fill((255, 255, 255))
-            # if self.background:
-            #     self.screen.blit(self.background, (0, 0))
             self.staves.draw(self.screen)
             if self.stage == 0:
                 make_fon_by_rect(self.screen, ['Выберите символ слева или справа', 'для построения лесенки'], 140, 480,
@@ -172,10 +180,12 @@ class Melodie(Window):
             if self.down != 0:
                 make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
+            if self.stage == 6:
+                self.note_group.draw(self.screen)
             for i in range(self.sharps):
-                self.stair.add(Note('sharp', 0, 80 + i * 15, self.sharp_on_stair[i] - 15))
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i] - 15))
             for i in range(self.flats):
-                self.stair.add(Note('flat', 0, 80 + i * 15, self.flat_on_stair[i] - 22))
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 22))
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             pygame.display.flip()
@@ -186,7 +196,9 @@ class Melodie(Window):
         sys.exit()
 
     def add_note(self, notes, oct):
-        pass
+        self.stage = 6
+        self.notes = notes
+        self.oct = oct
 
     def GoToLast(self):
         self.save()
@@ -235,6 +247,8 @@ class Melodie(Window):
             self.reject.set_func(self.next_stage)
 
     def save(self):
+        if self.stage == 6:
+            self.stage = 5
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         text = ('UPDATE Melodies\nSET is_violin = ' + str(self.is_violin) + ', sharp = ' + str(self.sharps) +
@@ -244,3 +258,9 @@ class Melodie(Window):
         cur.execute(text)
         con.commit()
         con.close()
+
+    def draw_note(self):
+        self.stage = 5
+        if self.oct < 3:
+            pass
+
