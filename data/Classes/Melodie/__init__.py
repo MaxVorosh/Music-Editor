@@ -57,10 +57,6 @@ class Melodie(Window):
             self.flat.set_func(self.first_flat)
         else:
             self.get_stair()
-        data = ['full', 'half', 'quater', 'small', 'very small']
-        self.clicked_notes = []
-        for i in range(5):
-            ClickedNote(self, data[i], 100 + i * 50, 0, 1 / 2 ** i)
         self.keys = [Key(self, self.is_violin, -10, 140), Key(self, self.is_violin, -10, 260),
                      Key(self, self.is_violin, -10, 380)]
         for key in self.keys:
@@ -196,8 +192,12 @@ class Melodie(Window):
         sys.exit()
 
     def add_note(self, notes, oct):
+        data = ['full', 'half', 'quater', 'small', 'very small']
+        self.clicked_notes = []
+        for i in range(5):
+            ClickedNote(self, data[i], 100 + i * 50, 0, 1 / 2 ** i)
         self.stage = 6
-        self.notes = notes
+        self.cur_notes = notes
         self.oct = oct
 
     def GoToLast(self):
@@ -251,16 +251,39 @@ class Melodie(Window):
             self.stage = 5
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
+        copy_body = self.body[:]
+        for i in range(len(copy_body)):
+            copy_body[i] = [str(j) for j in copy_body[i]]
+            copy_body[i] = ' '.join(copy_body[i])
+        body = ';'.join(copy_body)
         text = ('UPDATE Melodies\nSET is_violin = ' + str(self.is_violin) + ', sharp = ' + str(self.sharps) +
-                ', flat = ' + str(self.flats) + ', body = "' + str(self.body) + '", up = ' + str(self.up) +
+                ', flat = ' + str(self.flats) + ', body = "' + body + '", up = ' + str(self.up) +
                 ', down = ' + str(self.down) +
                 ', stage = ' + str(self.stage) + '\nWHERE id = ' + str(self.id))
         cur.execute(text)
         con.commit()
         con.close()
 
-    def draw_note(self):
+    def draw_note(self, weight):
+        self.weight = weight
         self.stage = 5
-        if self.oct < 3:
-            pass
-
+        data = []
+        for note in self.cur_notes:
+            con = sqlite3.connect('data\\db\\Melodies.db')
+            cur = con.cursor()
+            id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
+                             ' AND weight = ' + str(self.weight)).fetchall()
+            if not id:
+                cur.execute('INSERT INTO Notes(Note, Octave, weight) Values ("' + note + '", ' + str(self.oct) + ', ' +
+                            str(self.weight) + ')')
+            id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
+                             ' AND weight = ' + str(self.weight)).fetchall()[0]
+            data.append(id[0])
+            con.commit()
+            con.close()
+        if self.body[0]:
+            self.body.append(data)
+        else:
+            self.body[0] = data
+        for i in self.clicked_notes:
+            i.kill()

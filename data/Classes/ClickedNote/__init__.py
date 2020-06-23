@@ -9,5 +9,5 @@ class ClickedNote(Button):
         window.sprites.remove(self)
         self.resize(30, 90)
         self.move(x, y)
-        self.set_func(window.draw_note)
         self.weight = weight
+        self.set_func(window.draw_note, self.weight)
