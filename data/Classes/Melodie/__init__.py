@@ -21,7 +21,7 @@ class Melodie(Window):
         self.is_violin = melodie[1]
         self.sharps = melodie[2]
         self.flats = melodie[3]
-        self.body = [i.split() for i in melodie[4].split(';')]
+        self.body = [i.split() for i in str(melodie[4]).split(';')]
         self.name = melodie[5]
         self.up = melodie[6]
         self.down = melodie[7]
@@ -63,7 +63,10 @@ class Melodie(Window):
             key.set_func(key.update, self.stage)
         self.notes = {'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'A#': [], 'C#': [], 'D#': [],
                       'F#': [], 'G#': []}
-        self.up_note_y = {'B': 170, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 177}
+        self.up_note_1 = {'B': 142, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 135}
+        self.up_note_2 = {'B': 177, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 170}
+        self.up_note_3 = {'B': 128, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 121}
+        self.up_note_4 = {'B': 79, 'C': 114, 'D': 107, 'E': 100, 'F': 93, 'G': 86, 'A': 72}
         self.sharp_on_stair = [142, 163, 135, 156, 177, 149, 170]
         self.flat_on_stair = [170, 149, 177, 156, 184, 163, 191]
         for i in range(4):
@@ -178,6 +181,12 @@ class Melodie(Window):
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
             if self.stage == 6:
                 self.note_group.draw(self.screen)
+            for step in self.body:
+                for id in step:
+                    con = sqlite3.connect('data\\db\\Melodies.db')
+                    cur = con.cursor()
+                    note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id))
+                    con.close()
             for i in range(self.sharps):
                 self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i] - 15))
             for i in range(self.flats):
