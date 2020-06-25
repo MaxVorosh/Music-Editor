@@ -28,6 +28,7 @@ class Melodie(Window):
         self.stage = melodie[8]
         self.line = melodie[9]
         self.stair = pygame.sprite.Group()
+        self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
         self.ui()
         self.run()
@@ -67,6 +68,7 @@ class Melodie(Window):
         self.up_note_2 = {'B': 177, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 170}
         self.up_note_3 = {'B': 128, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 121}
         self.up_note_4 = {'B': 79, 'C': 114, 'D': 107, 'E': 100, 'F': 93, 'G': 86, 'A': 72}
+        self.up_note = {1: self.up_note_1, 2: self.up_note_2, 3: self.up_note_3, 4: self.up_note_4}
         self.sharp_on_stair = [142, 163, 135, 156, 177, 149, 170]
         self.flat_on_stair = [170, 149, 177, 156, 184, 163, 191]
         for i in range(4):
@@ -139,7 +141,7 @@ class Melodie(Window):
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button == 1:
                         self.click(event.pos)
-                    for note in self.note_group:
+                    for note in self.clicked_note_group:
                         if note.check_clicked(event.pos):
                             note.clicked()
                 if event.type == pygame.KEYDOWN:
@@ -180,19 +182,39 @@ class Melodie(Window):
                 make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
             if self.stage == 6:
-                self.note_group.draw(self.screen)
+                self.clicked_note_group.draw(self.screen)
             for step in self.body:
                 for id in step:
                     con = sqlite3.connect('data\\db\\Melodies.db')
                     cur = con.cursor()
-                    note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id))
+                    note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id)).fetchall()[0]
+                    if note[3] == 1:
+                        name = 'full'
+                        size = (11, 7)
+                    elif note[3] == 0.5:
+                        name = 'half'
+                        size = (11, 36)
+                    elif note[3] == 0.25:
+                        name = 'quater'
+                        size = (11, 36)
+                    elif note[3] == 0.125:
+                        name = 'small'
+                        size = (11, 20)
+                    elif note[3] == 0.0625:
+                        name = 'very small'
+                        size = (11, 20)
+                    self.note_group.add(
+                        Note(name, 80 + (self.sharps + self.flats) * 15 + 30 + (len(self.note_group) - 1) * 15,
+                             self.up_note[note[2]][note[1]], size))
                     con.close()
             for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i] - 15))
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i] - 15, (10, 30)))
             for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 22))
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 22, (10, 30)))
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
+            self.note_group.draw(self.screen)
+            self.note_group = pygame.sprite.Group()
             pygame.display.flip()
 
     def exitFunc(self):
@@ -202,9 +224,9 @@ class Melodie(Window):
 
     def add_note(self, notes, oct):
         data = ['full', 'half', 'quater', 'small', 'very small']
-        self.clicked_notes = []
         for i in range(5):
             ClickedNote(self, data[i], 100 + i * 50, 0, 1 / 2 ** i)
+            # C.set_func(self.draw_note, C.weight)
         self.stage = 6
         self.cur_notes = notes
         self.oct = oct
@@ -294,5 +316,5 @@ class Melodie(Window):
             self.body.append(data)
         else:
             self.body[0] = data
-        for i in self.clicked_notes:
+        for i in self.clicked_note_group:
             i.kill()
