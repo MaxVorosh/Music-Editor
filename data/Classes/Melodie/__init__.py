@@ -150,9 +150,9 @@ class Melodie(Window):
                              self.up_note[note[2]][note[1]], size))
                     con.close()
             for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i] - 15, (10, 30)))
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30)))
             for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 22, (10, 30)))
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30)))
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             self.note_group.draw(self.screen)
@@ -166,9 +166,9 @@ class Melodie(Window):
 
     def add_note(self, notes, oct):
         data = ['full', 'half', 'quater', 'small', 'very small']
+        sizes = [(32, 21), (23, 74), (23, 74), (45, 81), (45, 84)]
         for i in range(5):
-            ClickedNote(self, data[i], 100 + i * 50, 0, 1 / 2 ** i)
-            # C.set_func(self.draw_note, C.weight)
+            ClickedNote(self, data[i], 100 + i * 100, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
         self.stage = 6
         self.cur_notes = notes
         self.oct = oct
