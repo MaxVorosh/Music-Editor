@@ -73,6 +73,7 @@ class Melodie(Window):
         self.flat_on_stair = [170, 149, 177, 156, 184, 163, 191]
         if self.stage == 5:
             self.do_keyboard()
+            self.draw_body()
 
     def run(self):
         while self.running:
@@ -125,30 +126,6 @@ class Melodie(Window):
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
             if self.stage == 6:
                 self.clicked_note_group.draw(self.screen)
-            for step in self.body:
-                for id in step:
-                    con = sqlite3.connect('data\\db\\Melodies.db')
-                    cur = con.cursor()
-                    note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id)).fetchall()[0]
-                    if note[3] == 1:
-                        name = 'full'
-                        size = (21, 14)
-                    elif note[3] == 0.5:
-                        name = 'half'
-                        size = (15, 49)
-                    elif note[3] == 0.25:
-                        name = 'quater'
-                        size = (15, 49)
-                    elif note[3] == 0.125:
-                        name = 'small'
-                        size = (30, 54)
-                    elif note[3] == 0.0625:
-                        name = 'very small'
-                        size = (30, 56)
-                    self.note_group.add(
-                        Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (len(self.note_group) - 1) * 35,
-                             self.up_note[note[2]][note[1]], size))
-                    con.close()
             for i in range(self.sharps):
                 self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30)))
             for i in range(self.flats):
@@ -156,7 +133,6 @@ class Melodie(Window):
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             self.note_group.draw(self.screen)
-            self.note_group = pygame.sprite.Group()
             pygame.display.flip()
 
     def exitFunc(self):
@@ -242,18 +218,43 @@ class Melodie(Window):
         self.stage = 5
         data = []
         for note in self.cur_notes:
-            con = sqlite3.connect('data\\db\\Melodies.db')
-            cur = con.cursor()
-            id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
-                             ' AND weight = ' + str(self.weight)).fetchall()
-            if not id:
-                cur.execute('INSERT INTO Notes(Note, Octave, weight) Values ("' + note + '", ' + str(self.oct) + ', ' +
-                            str(self.weight) + ')')
-            id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
-                             ' AND weight = ' + str(self.weight)).fetchall()[0]
-            data.append(id[0])
-            con.commit()
-            con.close()
+            if note == '#':
+                self.note_group.add()
+            elif note == 'b':
+                pass
+            else:
+                con = sqlite3.connect('data\\db\\Melodies.db')
+                cur = con.cursor()
+                id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
+                                 ' AND weight = ' + str(self.weight)).fetchall()
+                if not id:
+                    cur.execute('INSERT INTO Notes(Note, Octave, weight) Values ("' + note + '", ' + str(self.oct) + ', ' +
+                                str(self.weight) + ')')
+                id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
+                                 ' AND weight = ' + str(self.weight)).fetchall()[0]
+                data.append(id[0])
+                con.commit()
+                con.close()
+                add = -20
+                if self.weight == 1:
+                    name = 'full'
+                    size = (21, 14)
+                    add = 0
+                elif self.weight == 0.5:
+                    name = 'half'
+                    size = (15, 49)
+                elif self.weight == 0.25:
+                    name = 'quater'
+                    size = (15, 49)
+                elif self.weight == 0.125:
+                    name = 'small'
+                    size = (30, 54)
+                elif self.weight == 0.0625:
+                    name = 'very small'
+                    size = (30, 56)
+                self.note_group.add(
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (len(self.note_group) - 1) * 35,
+                         self.up_note[self.oct][note] + add, size))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -323,3 +324,31 @@ class Melodie(Window):
             A_.move(140 + i * 154, 510)
             # A_.set_func(self.add_note, 'AB')
             self.notes['A#'].append(A_)
+
+    def draw_body(self):
+        for step in self.body:
+            for id in step:
+                con = sqlite3.connect('data\\db\\Melodies.db')
+                cur = con.cursor()
+                note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id)).fetchall()[0]
+                add = -20
+                if note[3] == 1:
+                    name = 'full'
+                    size = (21, 14)
+                    add = 0
+                elif note[3] == 0.5:
+                    name = 'half'
+                    size = (15, 49)
+                elif note[3] == 0.25:
+                    name = 'quater'
+                    size = (15, 49)
+                elif note[3] == 0.125:
+                    name = 'small'
+                    size = (30, 54)
+                elif note[3] == 0.0625:
+                    name = 'very small'
+                    size = (30, 56)
+                self.note_group.add(
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (len(self.note_group) - 1) * 35,
+                         self.up_note[note[2]][note[1]] + add, size))
+                con.close()
