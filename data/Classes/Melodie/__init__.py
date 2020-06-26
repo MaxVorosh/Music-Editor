@@ -215,13 +215,15 @@ class Melodie(Window):
         con.close()
 
     def draw_note(self, weight):
+        for i in self.clicked_note_group:
+            i.kill()
         self.weight = weight
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
+            # print(self.symb, len(self.note_group))
             next = 60
             if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b':
-                self.symb += 1
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
                 id = cur.execute(
@@ -243,12 +245,24 @@ class Melodie(Window):
                     name = 'flat'
                 add = 0
                 next_note = \
-                cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[0]
+                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()
+                if not next_note:
+                    cur.execute(
+                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note + 1] + '", ' + str(
+                            self.oct) + ', ' + str(self.weight) + ')')
+                next_note = \
+                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[
+                        0]
                 y = self.up_note[self.oct][next_note[1]]
+                # n = Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                #             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                #          y + add, size)
+                # print(n.rect.x)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
                          y + add, size))
+                self.symb += 1
                 con.close()
             else:
                 con = sqlite3.connect('data\\db\\Melodies.db')
@@ -291,8 +305,7 @@ class Melodie(Window):
             self.body.append(data)
         else:
             self.body[0] = data
-        for i in self.clicked_note_group:
-            i.kill()
+        self.cur_notes = []
 
     def do_keyboard(self):
         for i in range(4):
@@ -386,12 +399,15 @@ class Melodie(Window):
                 else:
                     if note[1] == '#':
                         name = 'sharp'
+                        add = 0
                     elif note[1] == 'b':
                         name = 'flat'
+                        add = -7
                     size = (10, 30)
-                    add = 0
                     next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i + 1])).fetchall()[0]
                     y = self.up_note[note[2]][next_note[1]]
+                # n = Note(name, 80 + (self.sharps + self.flats) * 15 + next + (len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10, y + add, size)
+                # print(n.rect.x)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
