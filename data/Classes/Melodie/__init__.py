@@ -27,6 +27,7 @@ class Melodie(Window):
         self.down = melodie[7]
         self.stage = melodie[8]
         self.line = melodie[9]
+        self.symb = 0
         self.stair = pygame.sprite.Group()
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
@@ -217,21 +218,51 @@ class Melodie(Window):
         self.weight = weight
         self.stage = 5
         data = []
-        for note in self.cur_notes:
-            if note == '#':
-                self.note_group.add()
-            elif note == 'b':
-                pass
+        for note in range(len(self.cur_notes)):
+            next = 60
+            if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b':
+                self.symb += 1
+                con = sqlite3.connect('data\\db\\Melodies.db')
+                cur = con.cursor()
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = 0').fetchall()
+                if not id:
+                    cur.execute(
+                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note] + '", ' + str(
+                            self.oct) + ', 0)')
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = 0').fetchall()[0]
+                data.append(id[0])
+                con.commit()
+                size = (10, 30)
+                if self.cur_notes[note] == '#':
+                    name = 'sharp'
+                else:
+                    name = 'flat'
+                add = 0
+                next_note = \
+                cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[0]
+                y = self.up_note[self.oct][next_note[1]]
+                self.note_group.add(
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                         y + add, size))
+                con.close()
             else:
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
-                id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
-                                 ' AND weight = ' + str(self.weight)).fetchall()
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = ' + str(self.weight)).fetchall()
                 if not id:
-                    cur.execute('INSERT INTO Notes(Note, Octave, weight) Values ("' + note + '", ' + str(self.oct) + ', ' +
-                                str(self.weight) + ')')
-                id = cur.execute('SELECT id FROM Notes WHERE Note = "' + note + '" AND Octave = ' + str(self.oct) +
-                                 ' AND weight = ' + str(self.weight)).fetchall()[0]
+                    cur.execute(
+                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note] + '", ' + str(
+                            self.oct) + ', ' + str(self.weight) + ')')
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = ' + str(self.weight)).fetchall()[0]
                 data.append(id[0])
                 con.commit()
                 con.close()
@@ -253,8 +284,9 @@ class Melodie(Window):
                     name = 'very small'
                     size = (30, 56)
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (len(self.note_group) - 1) * 35,
-                         self.up_note[self.oct][note] + add, size))
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                         self.up_note[self.oct][self.cur_notes[note]] + add, size))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -302,36 +334,39 @@ class Melodie(Window):
             C_ = Button(self, 'data\\Sprites\\black.png')
             C_.resize(15, 67)
             C_.move(23 + i * 154, 510)
-            # C_.set_func(self.add_note, 'CD')
+            C_.set_func(self.add_note, '#CbD', i + 1)
             self.notes['C#'].append(C_)
             D_ = Button(self, 'data\\Sprites\\black.png')
             D_.resize(15, 67)
             D_.move(50 + i * 154, 510)
-            # D_.set_func(self.add_note, 'DE')
+            D_.set_func(self.add_note, '#DbE', i + 1)
             self.notes['D#'].append(D_)
             F_ = Button(self, 'data\\Sprites\\black.png')
             F_.resize(15, 67)
             F_.move(89 + i * 154, 510)
-            # F_.set_func(self.add_note, 'FG')
+            F_.set_func(self.add_note, '#FbG', i + 1)
             self.notes['F#'].append(F_)
             G_ = Button(self, 'data\\Sprites\\black.png')
             G_.resize(15, 67)
             G_.move(114 + i * 154, 510)
-            # G_.set_func(self.add_note, 'GA')
+            G_.set_func(self.add_note, '#GbA', i + 1)
             self.notes['G#'].append(G_)
             A_ = Button(self, 'data\\Sprites\\black.png')
             A_.resize(15, 67)
             A_.move(140 + i * 154, 510)
-            # A_.set_func(self.add_note, 'AB')
+            A_.set_func(self.add_note, '#AbB', i + 1)
             self.notes['A#'].append(A_)
 
     def draw_body(self):
         for step in self.body:
-            for id in step:
+            for i in range(len(step)):
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
-                note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(id)).fetchall()[0]
+                note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
+                next = 60
+                if note[1] != '#' and note[1] != 'b':
+                    y = self.up_note[note[2]][note[1]]
                 if note[3] == 1:
                     name = 'full'
                     size = (21, 14)
@@ -348,7 +383,19 @@ class Melodie(Window):
                 elif note[3] == 0.0625:
                     name = 'very small'
                     size = (30, 56)
+                else:
+                    if note[1] == '#':
+                        name = 'sharp'
+                    elif note[1] == 'b':
+                        name = 'flat'
+                    size = (10, 30)
+                    add = 0
+                    next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i + 1])).fetchall()[0]
+                    y = self.up_note[note[2]][next_note[1]]
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (len(self.note_group) - 1) * 35,
-                         self.up_note[note[2]][note[1]] + add, size))
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                         y + add, size))
+                if note[1] == '#' or note[1] == 'b':
+                    self.symb += 1
                 con.close()
