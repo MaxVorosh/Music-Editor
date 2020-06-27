@@ -28,6 +28,7 @@ class Melodie(Window):
         self.stage = melodie[8]
         self.line = melodie[9]
         self.symb = 0
+        self.let = True
         self.stair = pygame.sprite.Group()
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
@@ -82,11 +83,11 @@ class Melodie(Window):
                 if event.type == pygame.QUIT:
                     self.exitFunc()
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:
-                        self.click(event.pos)
                     for note in self.clicked_note_group:
                         if note.check_clicked(event.pos):
                             note.clicked()
+                    if event.button == 1:
+                        self.click(event.pos)
                 if event.type == pygame.KEYDOWN:
                     if 3 <= self.stage <= 4:
                         chis = -1
@@ -142,6 +143,11 @@ class Melodie(Window):
         sys.exit()
 
     def add_note(self, notes, oct):
+        try:
+            self.sharp.kill()
+            self.flat.kill()
+        except:
+            pass
         data = ['full', 'half', 'quater', 'small', 'very small']
         sizes = [(32, 21), (23, 74), (23, 74), (45, 81), (45, 84)]
         for i in range(5):
@@ -347,27 +353,27 @@ class Melodie(Window):
             C_ = Button(self, 'data\\Sprites\\black.png')
             C_.resize(15, 67)
             C_.move(23 + i * 154, 510)
-            C_.set_func(self.add_note, '#CbD', i + 1)
+            C_.set_func(self.sharp_or_flat, 'CD', i + 1)
             self.notes['C#'].append(C_)
             D_ = Button(self, 'data\\Sprites\\black.png')
             D_.resize(15, 67)
             D_.move(50 + i * 154, 510)
-            D_.set_func(self.add_note, '#DbE', i + 1)
+            D_.set_func(self.sharp_or_flat, 'DE', i + 1)
             self.notes['D#'].append(D_)
             F_ = Button(self, 'data\\Sprites\\black.png')
             F_.resize(15, 67)
             F_.move(89 + i * 154, 510)
-            F_.set_func(self.add_note, '#FbG', i + 1)
+            F_.set_func(self.sharp_or_flat, 'FG', i + 1)
             self.notes['F#'].append(F_)
             G_ = Button(self, 'data\\Sprites\\black.png')
             G_.resize(15, 67)
             G_.move(114 + i * 154, 510)
-            G_.set_func(self.add_note, '#GbA', i + 1)
+            G_.set_func(self.sharp_or_flat, 'GA', i + 1)
             self.notes['G#'].append(G_)
             A_ = Button(self, 'data\\Sprites\\black.png')
             A_.resize(15, 67)
             A_.move(140 + i * 154, 510)
-            A_.set_func(self.add_note, '#AbB', i + 1)
+            A_.set_func(self.sharp_or_flat, 'AB', i + 1)
             self.notes['A#'].append(A_)
 
     def draw_body(self):
@@ -415,3 +421,20 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b':
                     self.symb += 1
                 con.close()
+
+    def sharp_or_flat(self, notes, oct):
+        self.let = False
+        for note in self.clicked_note_group:
+            note.kill()
+        self.sharp = Button(self, 'data\\Sprites\\sharp.png')
+        self.sharp.resize(20, 40)
+        self.sharp.move(100, 20)
+        self.sharp.set_func(self.go_to_add_note, '#' + notes[0], oct)
+        self.flat = Button(self, 'data\\Sprites\\flat.png')
+        self.flat.resize(20, 40)
+        self.flat.move(500, 20)
+        self.flat.set_func(self.go_to_add_note, 'b' + notes[1], oct)
+
+    def go_to_add_note(self, notes, oct):
+        self.let = True
+        self.add_note(notes, oct)
