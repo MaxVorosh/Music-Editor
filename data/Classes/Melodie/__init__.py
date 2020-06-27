@@ -29,6 +29,7 @@ class Melodie(Window):
         self.line = melodie[9]
         self.symb = 0
         self.let = True
+        self.weight = 0
         self.stair = pygame.sprite.Group()
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
@@ -151,7 +152,8 @@ class Melodie(Window):
         data = ['full', 'half', 'quater', 'small', 'very small']
         sizes = [(32, 21), (23, 74), (23, 74), (45, 81), (45, 84)]
         for i in range(5):
-            ClickedNote(self, data[i], 100 + i * 100, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
+            if self.weight + 1 / 2 ** i <= self.up / self.down:
+                ClickedNote(self, data[i], 100 + i * 100, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
         self.stage = 6
         self.cur_notes = notes
         self.oct = oct
@@ -223,7 +225,9 @@ class Melodie(Window):
     def draw_note(self, weight):
         for i in self.clicked_note_group:
             i.kill()
-        self.weight = weight
+        self.weight += weight
+        if self.weight == self.up / self.down:
+            self.weight = 0
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
@@ -255,7 +259,7 @@ class Melodie(Window):
                 if not next_note:
                     cur.execute(
                         'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note + 1] + '", ' + str(
-                            self.oct) + ', ' + str(self.weight) + ')')
+                            self.oct) + ', ' + str(weight) + ')')
                 next_note = \
                     cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[
                         0]
@@ -275,38 +279,39 @@ class Melodie(Window):
                 cur = con.cursor()
                 id = cur.execute(
                     'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
-                    ' AND weight = ' + str(self.weight)).fetchall()
+                    ' AND weight = ' + str(weight)).fetchall()
                 if not id:
                     cur.execute(
                         'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note] + '", ' + str(
-                            self.oct) + ', ' + str(self.weight) + ')')
+                            self.oct) + ', ' + str(weight) + ')')
                 id = cur.execute(
                     'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
-                    ' AND weight = ' + str(self.weight)).fetchall()[0]
+                    ' AND weight = ' + str(weight)).fetchall()[0]
                 data.append(id[0])
                 con.commit()
                 con.close()
                 add = -20
-                if self.weight == 1:
+                if weight == 1:
                     name = 'full'
                     size = (21, 14)
                     add = 0
-                elif self.weight == 0.5:
+                elif weight == 0.5:
                     name = 'half'
                     size = (15, 49)
-                elif self.weight == 0.25:
+                elif weight == 0.25:
                     name = 'quater'
                     size = (15, 49)
-                elif self.weight == 0.125:
+                elif weight == 0.125:
                     name = 'small'
                     size = (30, 54)
-                elif self.weight == 0.0625:
+                elif weight == 0.0625:
                     name = 'very small'
                     size = (30, 56)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size))
+
         if self.body[0]:
             self.body.append(data)
         else:
@@ -384,6 +389,9 @@ class Melodie(Window):
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
                 next = 60
+                self.weight += note[3]
+                if self.weight == self.up / self.down:
+                    self.weight -= 1
                 if note[1] != '#' and note[1] != 'b':
                     y = self.up_note[note[2]][note[1]]
                 if note[3] == 1:
