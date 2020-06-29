@@ -67,6 +67,7 @@ class Melodie(Window):
             key.set_func(key.update, self.stage)
         self.notes = {'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'A#': [], 'C#': [], 'D#': [],
                       'F#': [], 'G#': []}
+        self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.up_note_1 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
         self.up_note_2 = {'B': 170, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 177}
         self.up_note_3 = {'B': 121, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 128}
@@ -150,10 +151,14 @@ class Melodie(Window):
         except:
             pass
         data = ['full', 'half', 'quater', 'small', 'very small']
-        sizes = [(32, 21), (23, 74), (23, 74), (45, 81), (45, 84)]
+        sizes = [(24, 16), (17, 56), (17, 56), (34, 61), (34, 63)]
         for i in range(5):
             if self.weight + 1 / 2 ** i <= self.up / self.down:
-                ClickedNote(self, data[i], 100 + i * 100, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
+                ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
+        if len(notes) == 1 and not self.becars[notes[0]]:
+            self.becar = Button(self, 'data\\Sprites\\becar.png')
+            self.becar.move(520, 33)
+            self.becar.set_func(self.do_becar)
         self.stage = 6
         self.cur_notes = notes
         self.oct = oct
@@ -225,15 +230,19 @@ class Melodie(Window):
     def draw_note(self, weight):
         for i in self.clicked_note_group:
             i.kill()
+        if self.becar is not None:
+            self.becar.kill()
+            self.becar = None
         self.weight += weight
         if self.weight == self.up / self.down:
             self.weight = 0
+            self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
             # print(self.symb, len(self.note_group))
             next = 60
-            if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b':
+            if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
                 id = cur.execute(
@@ -251,6 +260,8 @@ class Melodie(Window):
                 size = (10, 30)
                 if self.cur_notes[note] == '#':
                     name = 'sharp'
+                elif self.cur_notes[note] == '|':
+                    name = 'becar'
                 else:
                     name = 'flat'
                 add = 0
@@ -264,13 +275,9 @@ class Melodie(Window):
                     cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[
                         0]
                 y = self.up_note[self.oct][next_note[1]]
-                # n = Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
-                #             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
-                #          y + add, size)
-                # print(n.rect.x)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          y + add, size))
                 self.symb += 1
                 con.close()
@@ -309,7 +316,7 @@ class Melodie(Window):
                     size = (30, 56)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size))
 
         if self.body[0]:
@@ -391,8 +398,8 @@ class Melodie(Window):
                 next = 60
                 self.weight += note[3]
                 if self.weight == self.up / self.down:
-                    self.weight -= 1
-                if note[1] != '#' and note[1] != 'b':
+                    self.weight = 0
+                if note[1] != '#' and note[1] != 'b' and note[1] != '|':
                     y = self.up_note[note[2]][note[1]]
                 if note[3] == 1:
                     name = 'full'
@@ -417,16 +424,17 @@ class Melodie(Window):
                     elif note[1] == 'b':
                         name = 'flat'
                         add = -7
+                    elif note[1] == '|':
+                        name = 'becar'
+                        add = 0
                     size = (10, 30)
                     next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i + 1])).fetchall()[0]
                     y = self.up_note[note[2]][next_note[1]]
-                # n = Note(name, 80 + (self.sharps + self.flats) * 15 + next + (len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10, y + add, size)
-                # print(n.rect.x)
                 self.note_group.add(
                     Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 10,
+                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          y + add, size))
-                if note[1] == '#' or note[1] == 'b':
+                if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
 
@@ -446,3 +454,9 @@ class Melodie(Window):
     def go_to_add_note(self, notes, oct):
         self.let = True
         self.add_note(notes, oct)
+
+    def do_becar(self):
+        self.cur_notes = '|' + self.cur_notes
+        self.becar.kill()
+        self.becar = None
+        self.becars[self.cur_notes[-1]] = True
