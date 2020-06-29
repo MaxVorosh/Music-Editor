@@ -154,14 +154,20 @@ class Melodie(Window):
         except:
             pass
         data = ['full', 'half', 'quater', 'small', 'very small']
-        sizes = [(24, 16), (17, 56), (17, 56), (34, 61), (34, 63)]
+        sizes = [(18, 12), (13, 42), (13, 42), (26, 46), (26, 47)]
         for i in range(5):
             if self.weight + 1 / 2 ** i <= self.up / self.down:
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
-        if len(notes) == 1 and not self.becars[notes[0]]:
+        if notes in self.becars.keys() and not self.becars[notes[0]]:
             self.becar = Button(self, 'data\\Sprites\\becar.png')
             self.becar.move(520, 33)
             self.becar.set_func(self.do_becar)
+            self.dubl = Button(self, 'data\\Sprites\\dubl.png')
+            self.dubl.move(451, 40)
+            self.dubl.set_func(self.double)
+        else:
+            self.dubl = None
+            self.becar = None
         self.stage = 6
         self.cur_notes = notes
         self.oct = oct
@@ -233,15 +239,13 @@ class Melodie(Window):
     def draw_note(self, weight):
         for i in self.clicked_note_group:
             i.kill()
+        if self.dubl is not None:
+            self.dubl.kill()
+            self.dubl = None
         if self.becar is not None:
             self.becar.kill()
             self.becar = None
         self.weight += weight
-        if self.weight == self.up / self.down:
-            self.weight = 0
-            self.lines.add(TactLine(80 + (self.sharps + self.flats) * 15 + 60 + (
-                    len(self.note_group) - self.symb) * 35 + self.symb * 11 - 7, 142))
-            self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
@@ -270,18 +274,18 @@ class Melodie(Window):
                     name = 'flat'
                 add = 0
                 next_note = \
-                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()
+                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[-1]) + '"').fetchall()
                 if not next_note:
                     cur.execute(
-                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note + 1] + '", ' + str(
+                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[-1] + '", ' + str(
                             self.oct) + ', ' + str(weight) + ')')
                 next_note = \
-                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[note + 1]) + '"').fetchall()[
+                    cur.execute('SELECT * FROM Notes WHERE Note = "' + str(self.cur_notes[-1]) + '"').fetchall()[
                         0]
                 y = self.up_note[self.oct][next_note[1]]
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
+                    Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
                          y + add, size))
                 self.symb += 1
                 con.close()
@@ -319,8 +323,8 @@ class Melodie(Window):
                     name = 'very small'
                     size = (30, 56)
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
+                    Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size))
 
         if self.body[0]:
@@ -328,6 +332,11 @@ class Melodie(Window):
         else:
             self.body[0] = data
         self.cur_notes = []
+        if self.weight == self.up / self.down:
+            self.weight = 0
+            self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
+                    len(self.note_group) - self.symb - 1) * 38 + self.symb * 11 - 3, 142))
+            self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
 
     def do_keyboard(self):
         for i in range(4):
@@ -402,8 +411,8 @@ class Melodie(Window):
                 self.weight += note[3]
                 if self.weight == self.up / self.down:
                     self.weight = 0
-                    self.lines.add(TactLine(80 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - self.symb) * 35 + self.symb * 11 - 3, 142))
+                    self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - self.symb) * 38 + self.symb * 11 - 3, 142))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|':
                     y = self.up_note[note[2]][note[1]]
                 if note[3] == 1:
@@ -433,11 +442,11 @@ class Melodie(Window):
                         name = 'becar'
                         add = 0
                     size = (10, 30)
-                    next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i + 1])).fetchall()[0]
+                    next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[-1])).fetchall()[0]
                     y = self.up_note[note[2]][next_note[1]]
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
+                    Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
                          y + add, size))
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
@@ -464,4 +473,31 @@ class Melodie(Window):
         self.cur_notes = '|' + self.cur_notes
         self.becar.kill()
         self.becar = None
+        self.dubl.kill()
+        self.dubl = None
         self.becars[self.cur_notes[-1]] = True
+
+    def double(self):
+        self.becar.kill()
+        self.becar = None
+        for i in self.clicked_note_group:
+            i.kill()
+        self.dubl.kill()
+        self.sharp = Button(self, 'data\\Sprites\\sharp.png')
+        self.sharp.resize(20, 40)
+        self.sharp.move(100, 20)
+        self.sharp.set_func(self.add_double, '##')
+        self.flat = Button(self, 'data\\Sprites\\flat.png')
+        self.flat.resize(20, 40)
+        self.flat.move(500, 20)
+        self.flat.set_func(self.add_double, 'bb')
+
+    def add_double(self, symb):
+        self.cur_notes = symb + self.cur_notes
+        self.sharp.kill()
+        self.flat.kill()
+        data = ['full', 'half', 'quater', 'small', 'very small']
+        sizes = [(18, 12), (13, 42), (13, 42), (26, 46), (26, 47)]
+        for i in range(5):
+            if self.weight + 1 / 2 ** i <= self.up / self.down:
+                ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
