@@ -7,6 +7,7 @@ from ..Key import Key
 from ..Stave import Stave
 from ..Note import Note
 from ..ClickedNote import ClickedNote
+from ..TactLine import TactLine
 from data.Functions.make_fon_by_rect import make_fon_by_rect
 
 
@@ -33,6 +34,7 @@ class Melodie(Window):
         self.stair = pygame.sprite.Group()
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
+        self.lines = pygame.sprite.Group()
         self.ui()
         self.run()
 
@@ -137,6 +139,7 @@ class Melodie(Window):
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             self.note_group.draw(self.screen)
+            self.lines.draw(self.screen)
             pygame.display.flip()
 
     def exitFunc(self):
@@ -236,12 +239,13 @@ class Melodie(Window):
         self.weight += weight
         if self.weight == self.up / self.down:
             self.weight = 0
+            self.lines.add(TactLine(80 + (self.sharps + self.flats) * 15 + 60 + (
+                    len(self.note_group) - self.symb) * 35 + self.symb * 11 - 7, 142))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
             # print(self.symb, len(self.note_group))
-            next = 60
             if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
@@ -276,7 +280,7 @@ class Melodie(Window):
                         0]
                 y = self.up_note[self.oct][next_note[1]]
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          y + add, size))
                 self.symb += 1
@@ -315,7 +319,7 @@ class Melodie(Window):
                     name = 'very small'
                     size = (30, 56)
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size))
 
@@ -395,10 +399,11 @@ class Melodie(Window):
                 cur = con.cursor()
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
-                next = 60
                 self.weight += note[3]
                 if self.weight == self.up / self.down:
                     self.weight = 0
+                    self.lines.add(TactLine(80 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - self.symb) * 35 + self.symb * 11 - 3, 142))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|':
                     y = self.up_note[note[2]][note[1]]
                 if note[3] == 1:
@@ -431,7 +436,7 @@ class Melodie(Window):
                     next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i + 1])).fetchall()[0]
                     y = self.up_note[note[2]][next_note[1]]
                 self.note_group.add(
-                    Note(name, 80 + (self.sharps + self.flats) * 15 + next + (
+                    Note(name, 80 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb) * 35 + self.symb * 11,
                          y + add, size))
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
