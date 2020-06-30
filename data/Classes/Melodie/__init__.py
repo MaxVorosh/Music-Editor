@@ -158,7 +158,7 @@ class Melodie(Window):
             pass
         for i in self.clicked_note_group:
             i.kill()
-        data = ['full', 'half', 'quater', 'small', 'very small']
+        data = ['full', 'half', 'quater', 'small', 'very_small']
         sizes = [(18, 12), (13, 42), (13, 42), (26, 46), (26, 47)]
         for i in range(5):
             if self.weight + 1 / 2 ** i <= self.up / self.down:
@@ -254,8 +254,45 @@ class Melodie(Window):
         self.stage = 5
         data = []
         for note in range(len(self.cur_notes)):
-            # print(self.symb, len(self.note_group))
-            if self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
+            if self.cur_notes[note] == 'P':
+                con = sqlite3.connect('data\\db\\Melodies.db')
+                cur = con.cursor()
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = ' + str(weight)).fetchall()
+                if not id:
+                    cur.execute(
+                        'INSERT INTO Notes(Note, Octave, weight) Values ("' + self.cur_notes[note] + '", ' + str(
+                            self.oct) + ', ' + str(weight) + ')')
+                id = cur.execute(
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    ' AND weight = ' + str(weight)).fetchall()[0]
+                data.append(id[0])
+                if weight == 1:
+                    name = 'full_pause'
+                    size = (20, 10)
+                    y = 161
+                elif weight == 0.5:
+                    name = 'half_pause'
+                    size = (20, 10)
+                    y = 166
+                elif weight == 0.25:
+                    name = 'quater_pause'
+                    size = (20, 56)
+                    y = 168
+                elif weight == 0.125:
+                    name = 'small_pause'
+                    size = (33, 56)
+                    y = 168
+                elif weight == 0.0625:
+                    name = 'very_small_pause'
+                    size = (28, 56)
+                    y = 168
+                self.note_group.add(Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11, y, size))
+                con.commit()
+                con.close()
+            elif self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
                 id = cur.execute(
@@ -325,7 +362,7 @@ class Melodie(Window):
                     name = 'small'
                     size = (30, 54)
                 elif weight == 0.0625:
-                    name = 'very small'
+                    name = 'very_small'
                     size = (30, 56)
                 self.note_group.add(
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
@@ -418,37 +455,60 @@ class Melodie(Window):
                     self.weight = 0
                     self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - self.symb) * 38 + self.symb * 11 - 3, 142))
-                if note[1] != '#' and note[1] != 'b' and note[1] != '|':
+                if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
-                if note[3] == 1:
-                    name = 'full'
-                    size = (21, 14)
+                if note[1] == 'P':
                     add = 0
-                elif note[3] == 0.5:
-                    name = 'half'
-                    size = (15, 49)
-                elif note[3] == 0.25:
-                    name = 'quater'
-                    size = (15, 49)
-                elif note[3] == 0.125:
-                    name = 'small'
-                    size = (30, 54)
-                elif note[3] == 0.0625:
-                    name = 'very small'
-                    size = (30, 56)
+                    if note[3] == 1:
+                        name = 'full_pause'
+                        size = (20, 10)
+                        y = 161
+                    elif note[3] == 0.5:
+                        name = 'half_pause'
+                        size = (20, 10)
+                        y = 166
+                    elif note[3] == 0.25:
+                        name = 'quater_pause'
+                        size = (20, 56)
+                        y = 168
+                    elif note[3] == 0.125:
+                        name = 'small_pause'
+                        size = (33, 56)
+                        y = 168
+                    elif note[3] == 0.0625:
+                        name = 'very_small_pause'
+                        size = (28, 56)
+                        y = 168
                 else:
-                    if note[1] == '#':
-                        name = 'sharp'
+                    if note[3] == 1:
+                        name = 'full'
+                        size = (21, 14)
                         add = 0
-                    elif note[1] == 'b':
-                        name = 'flat'
-                        add = -7
-                    elif note[1] == '|':
-                        name = 'becar'
-                        add = 0
-                    size = (10, 30)
-                    next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[-1])).fetchall()[0]
-                    y = self.up_note[note[2]][next_note[1]]
+                    elif note[3] == 0.5:
+                        name = 'half'
+                        size = (15, 49)
+                    elif note[3] == 0.25:
+                        name = 'quater'
+                        size = (15, 49)
+                    elif note[3] == 0.125:
+                        name = 'small'
+                        size = (30, 54)
+                    elif note[3] == 0.0625:
+                        name = 'very_small'
+                        size = (30, 56)
+                    else:
+                        if note[1] == '#':
+                            name = 'sharp'
+                            add = 0
+                        elif note[1] == 'b':
+                            name = 'flat'
+                            add = -7
+                        elif note[1] == '|':
+                            name = 'becar'
+                            add = 0
+                        size = (10, 30)
+                        next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[-1])).fetchall()[0]
+                        y = self.up_note[note[2]][next_note[1]]
                 self.note_group.add(
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
@@ -506,7 +566,7 @@ class Melodie(Window):
         self.cur_notes = symb + self.cur_notes
         self.sharp.kill()
         self.flat.kill()
-        data = ['full', 'half', 'quater', 'small', 'very small']
+        data = ['full', 'half', 'quater', 'small', 'very_small']
         sizes = [(18, 12), (13, 42), (13, 42), (26, 46), (26, 47)]
         for i in range(5):
             if self.weight + 1 / 2 ** i <= self.up / self.down:
