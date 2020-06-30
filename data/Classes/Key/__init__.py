@@ -27,7 +27,16 @@ class Key(Button):
                 key.is_violin = not key.is_violin
                 if key.is_violin:
                     key.set_image("data\\Sprites\\violin_black.png")
+                    self.window.up_note_1 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
+                    self.window.up_note_2 = {'B': 170, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 177}
+                    self.window.up_note_3 = {'B': 121, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 128}
+                    self.window.up_note_4 = {'B': 72, 'C': 114, 'D': 107, 'E': 100, 'F': 93, 'G': 86, 'A': 79}
+                    self.window.up_note = {1: self.window.up_note_1, 2: self.window.up_note_2, 3: self.window.up_note_3,
+                                           4: self.window.up_note_4}
                 else:
+                    self.window.up_note_1 = {'B': 184, 'E': 212, 'F': 205, 'G': 198, 'A': 191}
+                    self.window.up_note_2 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
+                    self.window.up_note = {1: self.window.up_note_1, 2: self.window.up_note_2}
                     key.set_image("data\\Sprites\\bass_black.png")
                 if not key.is_violin:
                     key.x += 10

@@ -72,15 +72,23 @@ class Melodie(Window):
         self.notes = {'A': [], 'B': [], 'C': [], 'D': [], 'E': [], 'F': [], 'G': [], 'A#': [], 'C#': [], 'D#': [],
                       'F#': [], 'G#': []}
         self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
-        self.up_note_1 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
-        self.up_note_2 = {'B': 170, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 177}
-        self.up_note_3 = {'B': 121, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 128}
-        self.up_note_4 = {'B': 72, 'C': 114, 'D': 107, 'E': 100, 'F': 93, 'G': 86, 'A': 79}
-        self.up_note = {1: self.up_note_1, 2: self.up_note_2, 3: self.up_note_3, 4: self.up_note_4}
+        if self.is_violin:
+            self.up_note_1 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
+            self.up_note_2 = {'B': 170, 'C': 212, 'D': 205, 'E': 198, 'F': 191, 'G': 184, 'A': 177}
+            self.up_note_3 = {'B': 121, 'C': 163, 'D': 156, 'E': 149, 'F': 142, 'G': 135, 'A': 128}
+            self.up_note_4 = {'B': 72, 'C': 114, 'D': 107, 'E': 100, 'F': 93, 'G': 86, 'A': 79}
+            self.up_note = {1: self.up_note_1, 2: self.up_note_2, 3: self.up_note_3, 4: self.up_note_4}
+        else:
+            self.up_note_1 = {'B': 184, 'E': 212, 'F': 205, 'G': 198, 'A': 191}
+            self.up_note_2 = {'B': 135, 'C': 177, 'D': 170, 'E': 163, 'F': 156, 'G': 149, 'A': 142}
+            self.up_note = {1: self.up_note_1, 2: self.up_note_2}
         self.sharp_on_stair = [142, 163, 135, 156, 177, 149, 170]
         self.flat_on_stair = [170, 149, 177, 156, 184, 163, 191]
         if self.stage == 5:
-            self.do_keyboard()
+            if self.is_violin:
+                self.do_keyboard_violin()
+            else:
+                self.do_keyboard_bass()
             self.draw_body()
 
     def run(self):
@@ -115,7 +123,10 @@ class Melodie(Window):
                                 if chis <= self.down:
                                     self.up = chis
                                     self.stage = 5
-                                    self.do_keyboard()
+                                    if self.is_violin:
+                                        self.do_keyboard_violin()
+                                    else:
+                                        self.do_keyboard_bass()
                                     for key in self.keys:
                                         key.set_func(key.update, self.stage)
             self.screen.fill((255, 255, 255))
@@ -380,7 +391,7 @@ class Melodie(Window):
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.do_pause()
 
-    def do_keyboard(self):
+    def do_keyboard_violin(self):
         for i in range(4):
             C = Button(self, 'data\\Sprites\\C.png')
             C.resize(21, 122)
@@ -442,6 +453,71 @@ class Melodie(Window):
             A_.move(140 + i * 154, 510)
             A_.set_func(self.sharp_or_flat, 'AB', i + 1)
             self.notes['A#'].append(A_)
+        self.do_pause()
+
+    def do_keyboard_bass(self):
+        C = Button(self, 'data\\Sprites\\C.png')
+        C.resize(21, 122)
+        C.move(10 + 154, 508)
+        C.set_func(self.add_note, 'C', 2)
+        self.notes['C'].append(C)
+        D = Button(self, 'data\\Sprites\\D.png')
+        D.resize(24, 124)
+        D.move(31 + 154, 506)
+        D.set_func(self.add_note, 'D', 2)
+        self.notes['D'].append(D)
+        C_ = Button(self, 'data\\Sprites\\black.png')
+        C_.resize(15, 67)
+        C_.move(23 + 154, 510)
+        C_.set_func(self.sharp_or_flat, 'CD', 2)
+        self.notes['C#'].append(C_)
+        D_ = Button(self, 'data\\Sprites\\black.png')
+        D_.resize(15, 67)
+        D_.move(50 + 154, 510)
+        D_.set_func(self.sharp_or_flat, 'DE', 2)
+        self.notes['D#'].append(D_)
+        for i in range(2):
+            E = Button(self, 'data\\Sprites\\E.png')
+            E.resize(23, 124)
+            E.move(55 + i * 154, 506)
+            E.set_func(self.add_note, 'E', i + 1)
+            self.notes['E'].append(E)
+            F = Button(self, 'data\\Sprites\\F.png')
+            F.resize(21, 123)
+            F.move(76 + i * 154, 507)
+            F.set_func(self.add_note, 'F', i + 1)
+            self.notes['F'].append(F)
+            G = Button(self, 'data\\Sprites\\G.png')
+            G.resize(24, 105)
+            G.move(97 + i * 154, 525)
+            G.set_func(self.add_note, 'G', i + 1)
+            self.notes['G'].append(G)
+            A = Button(self, 'data\\Sprites\\A.png')
+            A.resize(21, 122)
+            A.move(121 + i * 154, 508)
+            A.set_func(self.add_note, 'A', i + 1)
+            self.notes['A'].append(A)
+            B = Button(self, 'data\\Sprites\\B.png')
+            B.resize(22, 133)
+            B.move(142 + i * 154, 497)
+            B.set_func(self.add_note, 'B', i + 1)
+            self.notes['B'].append(B)
+            F_ = Button(self, 'data\\Sprites\\black.png')
+            F_.resize(15, 67)
+            F_.move(89 + i * 154, 510)
+            F_.set_func(self.sharp_or_flat, 'FG', i + 1)
+            self.notes['F#'].append(F_)
+            G_ = Button(self, 'data\\Sprites\\black.png')
+            G_.resize(15, 67)
+            G_.move(114 + i * 154, 510)
+            G_.set_func(self.sharp_or_flat, 'GA', i + 1)
+            self.notes['G#'].append(G_)
+            A_ = Button(self, 'data\\Sprites\\black.png')
+            A_.resize(15, 67)
+            A_.move(140 + i * 154, 510)
+            A_.set_func(self.sharp_or_flat, 'AB', i + 1)
+            self.notes['A#'].append(A_)
+        self.do_pause()
 
     def draw_body(self):
         for step in self.body:
@@ -516,7 +592,6 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
-        self.do_pause()
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
