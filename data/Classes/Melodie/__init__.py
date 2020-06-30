@@ -35,6 +35,8 @@ class Melodie(Window):
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
         self.lines = pygame.sprite.Group()
+        self.becar = None
+        self.dubl = None
         self.ui()
         self.run()
 
@@ -130,14 +132,15 @@ class Melodie(Window):
             if self.down != 0:
                 make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
-            if self.stage == 6:
-                self.clicked_note_group.draw(self.screen)
+            # if self.stage == 6:
+            #     self.clicked_note_group.draw(self.screen)
             for i in range(self.sharps):
                 self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30)))
             for i in range(self.flats):
                 self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30)))
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
+            self.clicked_note_group.draw(self.screen)
             self.note_group.draw(self.screen)
             self.lines.draw(self.screen)
             pygame.display.flip()
@@ -153,6 +156,8 @@ class Melodie(Window):
             self.flat.kill()
         except:
             pass
+        for i in self.clicked_note_group:
+            i.kill()
         data = ['full', 'half', 'quater', 'small', 'very small']
         sizes = [(18, 12), (13, 42), (13, 42), (26, 46), (26, 47)]
         for i in range(5):
@@ -326,7 +331,6 @@ class Melodie(Window):
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size))
-
         if self.body[0]:
             self.body.append(data)
         else:
@@ -337,6 +341,7 @@ class Melodie(Window):
             self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
                     len(self.note_group) - self.symb - 1) * 38 + self.symb * 11 - 3, 142))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
+        self.do_pause()
 
     def do_keyboard(self):
         for i in range(4):
@@ -451,11 +456,16 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
+        self.do_pause()
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
         for note in self.clicked_note_group:
             note.kill()
+        self.becar.kill()
+        self.becar = None
+        self.dubl.kill()
+        self.dubl = None
         self.sharp = Button(self, 'data\\Sprites\\sharp.png')
         self.sharp.resize(20, 40)
         self.sharp.move(100, 20)
@@ -501,3 +511,12 @@ class Melodie(Window):
         for i in range(5):
             if self.weight + 1 / 2 ** i <= self.up / self.down:
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
+
+    def do_pause(self):
+        self.cur_notes = 'P'
+        self.oct = 0
+        data = ['full_pause', 'half_pause', 'quater_pause', 'small_pause', 'very_small_pause']
+        sizes = [(41, 20), (42, 21), (18, 50), (24, 41), (25, 50)]
+        for i in range(5):
+            if self.weight + 1 / 2 ** i <= self.up / self.down:
+                ClickedNote(self, data[i], 100 + i * 85, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
