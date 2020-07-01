@@ -3,6 +3,7 @@ from ..Window import Window
 from ..Button import Button
 from ..SecondMenu import SecondMenu
 from ..Info import Info
+from ..Rules import Rules
 import sys
 
 
@@ -27,6 +28,10 @@ class MainMenu(Window):
         self.info.resize(80, 80)
         self.info.move(0, 0)
         self.info.set_func(self.get_info)
+        self.rules = Button(self, 'data\\Sprites\\rules.png')
+        self.rules.resize(80, 80)
+        self.rules.move(280, 0)
+        self.rules.set_func(self.show_rules)
         self.set_background('data\\Sprites\\bg.jpg')
 
     def startFunc(self):
@@ -48,6 +53,9 @@ class MainMenu(Window):
                 self.screen.blit(self.background, (0, 0))
             self.sprites.draw(self.screen)
             pygame.display.flip()
+
+    def show_rules(self):
+        Rules()
 
     def exitFunc(self):
         pygame.quit()
