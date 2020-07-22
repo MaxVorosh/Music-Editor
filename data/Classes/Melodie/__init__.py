@@ -39,6 +39,7 @@ class Melodie(Window):
         self.dubl = None
         self.point = None
         self.have_point = False
+        self.points = 0
         self.ui()
         self.run()
 
@@ -87,11 +88,11 @@ class Melodie(Window):
         self.sharp_on_stair = [142, 163, 135, 156, 177, 149, 170]
         self.flat_on_stair = [170, 149, 177, 156, 184, 163, 191]
         if self.stage == 5:
+            self.draw_body()
             if self.is_violin:
                 self.do_keyboard_violin()
             else:
                 self.do_keyboard_bass()
-            self.draw_body()
 
     def run(self):
         while self.running:
@@ -178,7 +179,7 @@ class Melodie(Window):
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
         self.point = Button(self, 'data\\Sprites\\point.png')
         self.point.resize(10, 10)
-        self.point.move(451, 90)
+        self.point.move(451, 75)
         self.point.set_func(self.do_point)
         if notes in self.becars.keys() and not self.becars[notes[0]]:
             self.becar = Button(self, 'data\\Sprites\\becar.png')
@@ -313,7 +314,7 @@ class Melodie(Window):
                     size = (28, 56)
                     y = 168
                 self.note_group.add(Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11, y, size, False))
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False))
                 con.commit()
                 con.close()
             elif self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
@@ -351,7 +352,7 @@ class Melodie(Window):
                 y = self.up_note[self.oct][next_note[1]]
                 self.note_group.add(
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          y + add, size, False))
                 self.symb += 1
                 con.close()
@@ -389,9 +390,14 @@ class Melodie(Window):
                     name = 'very_small'
                     size = (30, 56)
                 self.note_group.add(
-                    Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
+                    Note(name, 85 + self.points * 7 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size, True))
+                if self.have_point:
+                    self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
+                                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
+                    self.points += 1
         if self.body[0]:
             self.body.append(data)
         else:
@@ -400,7 +406,7 @@ class Melodie(Window):
         if self.weight == self.up / self.down:
             self.weight = 0
             self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
-                    len(self.note_group) - self.symb - 1) * 38 + self.symb * 11 - 3, 142))
+                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.have_point = False
         self.do_pause()
@@ -545,7 +551,7 @@ class Melodie(Window):
                 if self.weight == self.up / self.down:
                     self.weight = 0
                     self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - self.symb) * 38 + self.symb * 11 - 3, 142))
+                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
                 if note[1] == 'P':
@@ -607,8 +613,13 @@ class Melodie(Window):
                         y = self.up_note[note[2]][next_note[1]]
                 self.note_group.add(
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb) * 38 + self.symb * 11,
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          y + add, size, fl))
+                if note[4]:
+                    self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
+                         self.up_note[note[2]][note[1]], (10, 10), False))
+                    self.points += 1
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
@@ -671,10 +682,11 @@ class Melodie(Window):
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
         self.point = Button(self, 'data\\Sprites\\point.png')
         self.point.resize(10, 10)
-        self.point.move(451, 90)
+        self.point.move(451, 75)
         self.point.set_func(self.do_point)
 
     def do_pause(self):
+        print(self.weight)
         self.cur_notes = 'P'
         self.oct = 0
         data = ['full_pause', 'half_pause', 'quater_pause', 'small_pause', 'very_small_pause']
