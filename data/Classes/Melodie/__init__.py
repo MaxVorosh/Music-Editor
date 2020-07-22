@@ -686,7 +686,6 @@ class Melodie(Window):
         self.point.set_func(self.do_point)
 
     def do_pause(self):
-        print(self.weight)
         self.cur_notes = 'P'
         self.oct = 0
         data = ['full_pause', 'half_pause', 'quater_pause', 'small_pause', 'very_small_pause']
