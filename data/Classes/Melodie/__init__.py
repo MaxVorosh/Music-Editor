@@ -410,6 +410,7 @@ class Melodie(Window):
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.have_point = False
         self.do_pause()
+        self.union_notes_if_it_can()
 
     def do_keyboard_violin(self):
         for i in range(4):
@@ -623,6 +624,7 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
+                self.union_notes_if_it_can()
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
@@ -704,3 +706,6 @@ class Melodie(Window):
         for i in range(5):
             if self.weight + 1 / 2 ** i + 1 / 2 ** (i + 1) <= self.up / self.down:
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
+
+    def union_notes_if_it_can(self):
+        pass
