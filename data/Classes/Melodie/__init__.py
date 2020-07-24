@@ -40,6 +40,8 @@ class Melodie(Window):
         self.point = None
         self.have_point = False
         self.points = 0
+        self.note_x = []
+        self.note_y = []
         self.ui()
         self.run()
 
@@ -95,10 +97,14 @@ class Melodie(Window):
                 self.do_keyboard_bass()
 
     def run(self):
+        MYEVENTTYPE = 27
+        pygame.time.set_timer(MYEVENTTYPE, 300)
         while self.running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.exitFunc()
+                if event.type == MYEVENTTYPE:
+                    self.save()
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     for note in self.clicked_note_group:
                         if note.check_clicked(event.pos):
@@ -398,6 +404,9 @@ class Melodie(Window):
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
                                              self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
                     self.points += 1
+                self.note_x.append(85 + self.points * 7 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 + size[0] // 2)
+                self.note_y.append(self.up_note[self.oct][self.cur_notes[note]] + add)
         if self.body[0]:
             self.body.append(data)
         else:
@@ -624,7 +633,7 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
-                self.union_notes_if_it_can()
+                self.union_notes_if_it_can(True)
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
@@ -707,5 +716,23 @@ class Melodie(Window):
             if self.weight + 1 / 2 ** i + 1 / 2 ** (i + 1) <= self.up / self.down:
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
 
-    def union_notes_if_it_can(self):
+    def union_notes_if_it_can(self, all=False):
+        if all:
+            cur = 0
+            for i in range(1, len(self.body)):
+                if self.body[i] != self.body[cur]:
+                    #TODO проверка
+                    self.union_notes(cur, i)
+                    cur = i
+        else:
+            #TODO проверка
+            cur = len(self.body) - 1
+            second = 0
+            for i in range(len(self.body) - 2, -1, -1):
+                if self.body[i] != self.body[cur]:
+                    second = i
+                    break
+            self.union_notes(second, cur)
+
+    def union_notes(self, l, r):
         pass
