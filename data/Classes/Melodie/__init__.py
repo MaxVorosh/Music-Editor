@@ -8,6 +8,7 @@ from ..Stave import Stave
 from ..Note import Note
 from ..ClickedNote import ClickedNote
 from ..TactLine import TactLine
+from ..Line import Line
 from data.Functions.make_fon_by_rect import make_fon_by_rect
 
 
@@ -35,6 +36,7 @@ class Melodie(Window):
         self.clicked_note_group = pygame.sprite.Group()
         self.note_group = pygame.sprite.Group()
         self.lines = pygame.sprite.Group()
+        self.none_tact_lines = []
         self.becar = None
         self.dubl = None
         self.point = None
@@ -163,6 +165,8 @@ class Melodie(Window):
             self.clicked_note_group.draw(self.screen)
             self.note_group.draw(self.screen)
             self.lines.draw(self.screen)
+            for line in self.none_tact_lines:
+                line.draw()
             pygame.display.flip()
 
     def exitFunc(self):
@@ -405,8 +409,11 @@ class Melodie(Window):
                                              self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
                     self.points += 1
                 self.note_x.append(85 + self.points * 7 + (self.sharps + self.flats) * 15 + 60 + (
-                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 + size[0] // 2)
+                        len(self.note_group) - 2 - self.symb - self.points) * 38 + self.symb * 11)
                 self.note_y.append(self.up_note[self.oct][self.cur_notes[note]] + add)
+                if 128 <= self.note_y[-1] + size[1] - 14 <= 212:
+                    self.none_tact_lines.append(Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1]),
+                                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1])))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -625,6 +632,13 @@ class Melodie(Window):
                     Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          y + add, size, fl))
+                if fl:
+                    self.note_y.append(y + add)
+                    self.note_x.append(85 + (self.sharps + self.flats) * 15 + 60 + (
+                            len(self.note_group) - 2 - self.symb - self.points) * 38 + self.symb * 11)
+                    if 128 <= self.note_y[-1] + size[1] - 14 <= 212:
+                        self.none_tact_lines.append(Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1]),
+                                                         (self.note_x[-1] + size[0] + 4, self.note_y[-1])))
                 if note[4]:
                     self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
@@ -637,6 +651,7 @@ class Melodie(Window):
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
+        self.point.kill()
         for note in self.clicked_note_group:
             note.kill()
         self.becar.kill()
@@ -720,14 +735,14 @@ class Melodie(Window):
         if all:
             cur = 0
             for i in range(1, len(self.body)):
-                if not self.check_union(self.body[i], self.body[cur]):
+                if not self.check_union(self.body[i][-1], self.body[cur][-1]):
                     self.union_notes(cur, i)
                     cur = i
         else:
             cur = len(self.body) - 1
             second = 0
             for i in range(len(self.body) - 2, -1, -1):
-                if not self.check_union(self.body[i], self.body[cur]):
+                if not self.check_union(self.body[i][-1], self.body[cur][-1]):
                     second = i
                     break
             self.union_notes(second, cur)
@@ -738,7 +753,7 @@ class Melodie(Window):
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
-        sample_note = cur.execute("SELECT (Weight, Point) FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
-        current_note = cur.execute("SELECT (Weight, Point) FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
-        return sample_note[0] + sample_note[0] / 2 * sample_note[1] == current_note[0] + current_note[0] / 2 * \
-               current_note[1]
+        sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
+        current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
+        return (sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
+                current_note[1]) and not (sample_note[1] and current_note[1])
