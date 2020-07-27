@@ -320,7 +320,7 @@ class Melodie(Window):
                     size = (28, 56)
                     y = 168
                 self.note_group.add(Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False))
+                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False))
                 con.commit()
                 con.close()
             elif self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
@@ -405,7 +405,7 @@ class Melodie(Window):
                                              self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
                     self.points += 1
                 self.note_x.append(85 + self.points * 7 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 + size[0] // 2)
+                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 + size[0] // 2)
                 self.note_y.append(self.up_note[self.oct][self.cur_notes[note]] + add)
         if self.body[0]:
             self.body.append(data)
@@ -628,7 +628,7 @@ class Melodie(Window):
                 if note[4]:
                     self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
-                         self.up_note[note[2]][note[1]], (10, 10), False))
+                                             self.up_note[note[2]][note[1]], (10, 10), False))
                     self.points += 1
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
@@ -720,19 +720,25 @@ class Melodie(Window):
         if all:
             cur = 0
             for i in range(1, len(self.body)):
-                if self.body[i] != self.body[cur]:
-                    #TODO проверка
+                if not self.check_union(self.body[i], self.body[cur]):
                     self.union_notes(cur, i)
                     cur = i
         else:
-            #TODO проверка
             cur = len(self.body) - 1
             second = 0
             for i in range(len(self.body) - 2, -1, -1):
-                if self.body[i] != self.body[cur]:
+                if not self.check_union(self.body[i], self.body[cur]):
                     second = i
                     break
             self.union_notes(second, cur)
 
     def union_notes(self, l, r):
         pass
+
+    def check_union(self, sample_id, current_id):
+        con = sqlite3.connect('data\\db\\Melodies.db')
+        cur = con.cursor()
+        sample_note = cur.execute("SELECT (Weight, Point) FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
+        current_note = cur.execute("SELECT (Weight, Point) FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
+        return sample_note[0] + sample_note[0] / 2 * sample_note[1] == current_note[0] + current_note[0] / 2 * \
+               current_note[1]
