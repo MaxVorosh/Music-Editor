@@ -735,25 +735,44 @@ class Melodie(Window):
         if all:
             cur = 0
             for i in range(1, len(self.body)):
-                if not self.check_union(self.body[i][-1], self.body[cur][-1]):
+                ans = self.check_union(self.body[i][-1], self.body[cur][-1])
+                if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
                     self.union_notes(cur, i)
                     cur = i
         else:
             cur = len(self.body) - 1
             second = 0
             for i in range(len(self.body) - 2, -1, -1):
-                if not self.check_union(self.body[i][-1], self.body[cur][-1]):
+                ans = self.check_union(self.body[i][-1], self.body[cur][-1])
+                if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
                     second = i
                     break
             self.union_notes(second, cur)
 
     def union_notes(self, l, r):
-        pass
+        max_y, min_y = self.note_y[l], self.note_y[l]
+        max_y_ind, min_y_ind = l, l
+        for i in range(l + 1, r + 1):
+            if max_y < self.note_y[i]:
+                max_y = self.note_y[i]
+                max_y_ind = i
+            if min_y > self.note_y[i]:
+                min_y = self.note_y[i]
+                min_y_ind = i
+        if max_y == min_y:
+            tn = 0
+        elif abs(self.note_x[min_y_ind] - self.note_x[max_y_ind]) <= 7:
+            tn = abs((min_y - max_y) / (self.note_x[min_y_ind] - self.note_x[max_y_ind]))
+        else:
+            tn = abs(14 / (self.note_x[min_y_ind] - self.note_x[max_y_ind]))
+        start_y = max_y + (self.note_x[max_y_ind] - self.note_x[l]) * tn
+        stop_y = max_y - (self.note_x[r] - self.note_x[max_y_ind]) * tn
+        self.none_tact_lines.append(Line(self.screen, (self.note_x[l] + 30, start_y), (self.note_x[r] + 30, stop_y)))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
-        return (sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
-                current_note[1]) and not (sample_note[1] and current_note[1])
+        return ((sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
+                current_note[1]) and not (sample_note[1] and current_note[1]), sample_note[0] - sample_note[0] // 2 * sample_note[1])
