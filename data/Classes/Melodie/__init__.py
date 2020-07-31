@@ -647,7 +647,7 @@ class Melodie(Window):
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 con.close()
-                self.union_notes_if_it_can(True)
+        self.union_notes_if_it_can(True)
 
     def sharp_or_flat(self, notes, oct):
         self.let = False
@@ -737,19 +737,22 @@ class Melodie(Window):
             for i in range(1, len(self.body)):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
                 if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
-                    self.union_notes(cur, i)
+                    self.union_notes(cur, i, ans[1] == 1 / 8)
                     cur = i
+            self.union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
         else:
             cur = len(self.body) - 1
             second = 0
+            ans = (0, 0)
             for i in range(len(self.body) - 2, -1, -1):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
                 if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
                     second = i
                     break
-            self.union_notes(second, cur)
+            if ans != (0, 0):
+                self.union_notes(second, cur, ans[1] == 1 / 8)
 
-    def union_notes(self, l, r):
+    def union_notes(self, l, r, is_eight):
         max_y, min_y = self.note_y[l], self.note_y[l]
         max_y_ind, min_y_ind = l, l
         for i in range(l + 1, r + 1):
@@ -767,7 +770,11 @@ class Melodie(Window):
             tn = abs(14 / (self.note_x[min_y_ind] - self.note_x[max_y_ind]))
         start_y = max_y + (self.note_x[max_y_ind] - self.note_x[l]) * tn
         stop_y = max_y - (self.note_x[r] - self.note_x[max_y_ind]) * tn
-        self.none_tact_lines.append(Line(self.screen, (self.note_x[l] + 30, start_y), (self.note_x[r] + 30, stop_y)))
+        self.none_tact_lines.append(
+            Line(self.screen, (self.note_x[l] + 30, int(start_y)), (self.note_x[r] + 30, int(stop_y))))
+        if not is_eight:
+            self.none_tact_lines.append(
+                Line(self.screen, (self.note_x[l] + 30, int(start_y) - 7), (self.note_x[r] + 30, int(stop_y) - 7)))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
@@ -775,4 +782,5 @@ class Melodie(Window):
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
         return ((sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
-                current_note[1]) and not (sample_note[1] and current_note[1]), sample_note[0] - sample_note[0] // 2 * sample_note[1])
+                 current_note[1]) and not (sample_note[1] and current_note[1]),
+                sample_note[0] - sample_note[0] // 2 * sample_note[1])
