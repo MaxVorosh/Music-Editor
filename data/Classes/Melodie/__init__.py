@@ -44,6 +44,7 @@ class Melodie(Window):
         self.points = 0
         self.note_x = []
         self.note_y = []
+        self.note_symb = []
         self.ui()
         self.run()
 
@@ -205,6 +206,7 @@ class Melodie(Window):
             self.becar = None
         self.stage = 6
         self.cur_notes = notes
+        self.note_symb += [(i, self.oct) for i in self.cur_notes]
         self.oct = oct
 
     def GoToLast(self):
@@ -564,6 +566,7 @@ class Melodie(Window):
                 cur = con.cursor()
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
+                self.note_symb.append((note[1], note[2]))
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -734,12 +737,17 @@ class Melodie(Window):
     def union_notes_if_it_can(self, all=False):
         if all:
             cur = 0
+            w = 0
             for i in range(1, len(self.body)):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
-                if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
-                    self.union_notes(cur, i, ans[1] == 1 / 8)
+                if not ans[0] or ans[1] + w > 1 or ans[1] > 1 / 8:
+                    self.union_notes(cur, i - 1, ans[1] == 1 / 8)
                     cur = i
-            self.union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
+                w += ans[1]
+                if w > 1:
+                    w -= 1
+            if cur != len(self.body) - 1:
+                self.union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
         else:
             cur = len(self.body) - 1
             second = 0
@@ -753,6 +761,9 @@ class Melodie(Window):
                 self.union_notes(second, cur, ans[1] == 1 / 8)
 
     def union_notes(self, l, r, is_eight):
+        if l == r:
+            return
+        #print(self.note_symb)
         max_y, min_y = self.note_y[l], self.note_y[l]
         max_y_ind, min_y_ind = l, l
         for i in range(l + 1, r + 1):
