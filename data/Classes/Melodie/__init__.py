@@ -768,13 +768,15 @@ class Melodie(Window):
                     start = i
                 # print(w)
             # print(start)
-            for i in range(len(self.body) - 2, start - 1, -1):
+            ans = (0, 0)
+            for i in range(len(self.body) - 2, max(start - 2, -1), -1):
                 ans = self.check_union(self.body[cur][-1], self.body[i][-1])
                 # print(ans)
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
                 w += ans[1]
+            # print(ans)
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
