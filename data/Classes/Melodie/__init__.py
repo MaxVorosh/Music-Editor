@@ -44,7 +44,8 @@ class Melodie(Window):
         self.points = 0
         self.note_x = []
         self.note_y = []
-        self.note_symb = []
+        self.first_note = []
+        # self.note_symb = []
         self.ui()
         self.run()
 
@@ -206,7 +207,7 @@ class Melodie(Window):
             self.becar = None
         self.stage = 6
         self.cur_notes = notes
-        self.note_symb += [(i, self.oct) for i in self.cur_notes]
+        # self.note_symb += [(i, self.oct) for i in self.cur_notes]
         self.oct = oct
 
     def GoToLast(self):
@@ -566,7 +567,12 @@ class Melodie(Window):
                 cur = con.cursor()
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
-                self.note_symb.append((note[1], note[2]))
+                # self.note_symb.append((note[1], note[2]))
+                if self.first_note:
+                    if self.first_note[-1] != note[2]:
+                        self.first_note.append(note[2])
+                else:
+                    self.first_note.append(note[2])
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -752,18 +758,30 @@ class Melodie(Window):
             cur = len(self.body) - 1
             second = 0
             ans = (0, 0)
-            for i in range(len(self.body) - 2, -1, -1):
+            w = 0
+            start = 0
+            for i in range(len(self.body)):
+                ans = self.check_union(self.body[cur][-1], self.body[cur][-1])
+                w += ans[1]
+                if w > 1:
+                    w -= 1
+                    start = i
+            # print(start)
+            for i in range(len(self.body) - 2, start - 1, -1):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
-                if not ans[0] or ans[1] * abs(cur - i) > 1 or ans[1] > 1 / 8:
+                if not ans[0] or ans[1] > 1 / 8:
                     second = i
                     break
+                w += ans[1]
             if ans != (0, 0):
+                if self.none_tact_lines:
+                    self.none_tact_lines.pop()
                 self.union_notes(second, cur, ans[1] == 1 / 8)
 
     def union_notes(self, l, r, is_eight):
         if l == r:
             return
-        #print(self.note_symb)
+        # print(self.note_symb)
         max_y, min_y = self.note_y[l], self.note_y[l]
         max_y_ind, min_y_ind = l, l
         for i in range(l + 1, r + 1):
@@ -781,8 +799,28 @@ class Melodie(Window):
             tn = abs(14 / (self.note_x[min_y_ind] - self.note_x[max_y_ind]))
         start_y = max_y + (self.note_x[max_y_ind] - self.note_x[l]) * tn
         stop_y = max_y - (self.note_x[r] - self.note_x[max_y_ind]) * tn
+        cnt = -1
+        up, down = 0, 0
+        for i in self.note_group:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                cnt += 1
+                if l <= cnt <= r:
+                    if i.up:
+                        up += 1
+                    else:
+                        down += 1
+        cnt = -1
+        for i in self.note_group:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                cnt += 1
+                if l <= cnt <= r:
+                    i.change_image('quater', (15, 49))
+                    if up >= down and not i.up:
+                        i.change_up()
+                    elif up < down and i.up:
+                        i.change_up()
         self.none_tact_lines.append(
-            Line(self.screen, (self.note_x[l] + 30, int(start_y)), (self.note_x[r] + 30, int(stop_y))))
+            Line(self.screen, (self.note_x[l] + 15, int(start_y)), (self.note_x[r] + 15, int(stop_y))))
         if not is_eight:
             self.none_tact_lines.append(
                 Line(self.screen, (self.note_x[l] + 30, int(start_y) - 7), (self.note_x[r] + 30, int(stop_y) - 7)))
