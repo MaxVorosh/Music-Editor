@@ -761,27 +761,32 @@ class Melodie(Window):
             w = 0
             start = 0
             for i in range(len(self.body)):
-                ans = self.check_union(self.body[cur][-1], self.body[cur][-1])
+                ans = self.check_union(self.body[i][-1], self.body[i][-1])
                 w += ans[1]
                 if w > 1:
                     w -= 1
                     start = i
+                # print(w)
             # print(start)
             for i in range(len(self.body) - 2, start - 1, -1):
-                ans = self.check_union(self.body[i][-1], self.body[cur][-1])
+                ans = self.check_union(self.body[cur][-1], self.body[i][-1])
+                # print(ans)
                 if not ans[0] or ans[1] > 1 / 8:
-                    second = i
+                    second = i + 1
                     break
                 w += ans[1]
-            if ans != (0, 0):
+            if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
+                    if ans[1] == 1 / 16:
+                        self.none_tact_lines.pop()
                 self.union_notes(second, cur, ans[1] == 1 / 8)
+        # print()
 
     def union_notes(self, l, r, is_eight):
-        if l == r:
+        if l >= r:
             return
-        # print(self.note_symb)
+        # print(l, r)
         max_y, min_y = self.note_y[l], self.note_y[l]
         max_y_ind, min_y_ind = l, l
         for i in range(l + 1, r + 1):
@@ -830,6 +835,7 @@ class Melodie(Window):
         cur = con.cursor()
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
+        # print(current_note)
         return ((sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
                  current_note[1]) and not (sample_note[1] and current_note[1]),
-                sample_note[0] - sample_note[0] // 2 * sample_note[1])
+                current_note[0] - current_note[0] // 2 * current_note[1])
