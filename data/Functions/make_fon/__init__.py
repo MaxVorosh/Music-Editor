@@ -2,12 +2,12 @@ import pygame
 from ..load import load
 
 
-def make_fon(screen, intro_text):
+def make_fon(screen, intro_text, font_size=30):
     pygame.init()
     fon = pygame.transform.scale(load('data\\Sprites\\bg.jpg'),
                                  (screen.get_width(), screen.get_height()))
     screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
+    font = pygame.font.Font(None, font_size)
     text_coord = screen.get_width() // 2 - (len(intro_text) * 21 + (len(intro_text) - 1) * 10) // 2
     for line in intro_text:
         string_rendered = font.render(line, 1, pygame.Color('white'))

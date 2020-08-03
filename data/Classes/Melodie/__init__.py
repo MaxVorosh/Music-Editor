@@ -812,7 +812,7 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
-                    if i.up:
+                    if i.start_up:
                         up += 1
                     else:
                         down += 1
