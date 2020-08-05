@@ -415,9 +415,17 @@ class Melodie(Window):
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
-                if 128 <= self.note_y[-1] + size[1] - 14 <= 212:
-                    self.note_line.append(Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
-                                               (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.start_up) or (
+                        128 <= self.note_y[-1] + 14 <= 212 and not n.start_up)):
+                    # print(self.note_y[-1], size[1])
+                    if n.start_up:
+                        self.note_line.append(
+                            Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
+                                 (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                    else:
+                        self.note_line.append(
+                            Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
+                                 (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -645,9 +653,17 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    if 128 <= self.note_y[-1] + size[1] - 14 <= 212:
-                        self.note_line.append(Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
-                                                   (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                    if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.start_up) or (
+                            128 <= self.note_y[-1] + 14 <= 212 and not n.start_up)):
+                        # print(self.note_y[-1], size[1])
+                        if n.start_up:
+                            self.note_line.append(
+                                Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
+                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                        else:
+                            self.note_line.append(
+                                Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
+                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
                 if note[4]:
                     self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
