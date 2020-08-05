@@ -766,29 +766,23 @@ class Melodie(Window):
                 if w > 1:
                     w -= 1
                     start = i
-                # print(w)
-            # print(start)
             ans = (0, 0)
             for i in range(len(self.body) - 2, max(start - 2, -1), -1):
                 ans = self.check_union(self.body[cur][-1], self.body[i][-1])
-                # print(ans)
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
                 w += ans[1]
-            # print(ans)
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
                     if ans[1] == 1 / 16:
                         self.none_tact_lines.pop()
                 self.union_notes(second, cur, ans[1] == 1 / 8)
-        # print()
 
     def union_notes(self, l, r, is_eight):
         if l >= r:
             return
-        # print(l, r)
         max_y, min_y = 0, 0
         max_y_ind, min_y_ind = -1, -1
         for i in range(l, r + 1):
@@ -803,11 +797,10 @@ class Melodie(Window):
         if max_y == min_y:
             tn = 0
         else:
-            # print(max_y_ind, min_y_ind, max_y, min_y, self.note_y)
             tn = (max_y - min_y) / abs(self.note_x[min_y_ind] - self.note_x[max_y_ind])
         start_y = max_y + (self.note_x[max_y_ind] - self.note_x[l]) * tn
         stop_y = max_y - (self.note_x[r] - self.note_x[max_y_ind]) * tn
-        print(tn, max_y_ind, self.note_x, max_y, min_y, start_y, stop_y, self.note_y)
+        # print(tn, max_y_ind, self.note_x, max_y, min_y, start_y, stop_y, self.note_y)
         cnt = -1
         up, down = 0, 0
         for i in self.note_group:
@@ -819,28 +812,35 @@ class Melodie(Window):
                     else:
                         down += 1
         cnt = -1
+        fl = up >= down
         for i in self.note_group:
-            print(i.rect.y)
+            # print(i.rect.y)
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
                     i.change_image('quater', (15, 49))
-                    if up >= down and not i.up:
+                    if up >= down and not i.start_up:
                         i.change_up()
-                    elif up < down and i.up:
+                    elif up < down and i.start_up:
                         i.change_up()
-        self.none_tact_lines.append(
-            Line(self.screen, (self.note_x[l] + 15, int(start_y) + 3), (self.note_x[r] + 15, int(stop_y) + 3)))
-        if not is_eight:
+        if fl:
             self.none_tact_lines.append(
-                Line(self.screen, (self.note_x[l] + 15, int(start_y) - 4), (self.note_x[r] + 15, int(stop_y) - 4)))
+                Line(self.screen, (self.note_x[l] + 15, int(start_y) + 3), (self.note_x[r] + 15, int(stop_y) + 3)))
+            if not is_eight:
+                self.none_tact_lines.append(
+                    Line(self.screen, (self.note_x[l] + 15, int(start_y) - 4), (self.note_x[r] + 15, int(stop_y) - 4)))
+        else:
+            self.none_tact_lines.append(
+                Line(self.screen, (self.note_x[l], int(start_y) + 52), (self.note_x[r], int(stop_y) + 52)))
+            if not is_eight:
+                self.none_tact_lines.append(
+                    Line(self.screen, (self.note_x[l], int(start_y) + 45), (self.note_x[r], int(stop_y) + 45)))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
-        # print(current_note)
         return ((sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
                  current_note[1]) and not (sample_note[1] and current_note[1]),
                 current_note[0] - current_note[0] // 2 * current_note[1])
