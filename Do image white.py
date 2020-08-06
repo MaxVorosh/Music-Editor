@@ -1,8 +1,8 @@
 from PIL import Image
 
 
-img = Image.open('data\\Sprites\\sharp.png')
-'''img = img.convert("RGBA")
+img = Image.open('data\\Sprites\\very_small_down.png')
+img = img.convert("RGBA")
 datas = img.getdata()
 
 newData = []
@@ -12,5 +12,5 @@ for item in datas:
     else:
         newData.append((0, 0, 0, 255))
 
-img.putdata(newData)'''
-img.save("data\\Sprites\\sharp_down.png", "PNG")
+img.putdata(newData)
+img.save("data\\Sprites\\very_small_down.png", "PNG")

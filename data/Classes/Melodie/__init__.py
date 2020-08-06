@@ -782,6 +782,8 @@ class Melodie(Window):
                 if w > 1:
                     w -= 1
                     start = i
+                if i == len(self.body) - 1:
+                    fl = ans[1] == 1 / 8
             ans = (0, 0)
             for i in range(len(self.body) - 2, max(start - 2, -1), -1):
                 ans = self.check_union(self.body[cur][-1], self.body[i][-1])
@@ -794,7 +796,7 @@ class Melodie(Window):
                     self.none_tact_lines.pop()
                     if ans[1] == 1 / 16:
                         self.none_tact_lines.pop()
-                self.union_notes(second, cur, ans[1] == 1 / 8)
+                self.union_notes(second, cur, fl)
 
     def union_notes(self, l, r, is_eight):
         if l >= r:
@@ -867,7 +869,7 @@ class Melodie(Window):
             stop_y = min_y - (self.note_x[r] - self.note_x[min_y_ind]) * tn
             # if second_min_y_ind > min_y_ind:
             #     start_y, stop_y = stop_y, start_y
-        print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
+        # print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
         # print((self.note_x[max_y_ind] - self.note_x[l]) * tn, (self.note_x[r] - self.note_x[max_y_ind]) * tn)
         if fl:
             self.none_tact_lines.append(
@@ -880,7 +882,7 @@ class Melodie(Window):
                 Line(self.screen, (self.note_x[l], int(start_y) + 49), (self.note_x[r], int(stop_y) + 49)))
             if not is_eight:
                 self.none_tact_lines.append(
-                    Line(self.screen, (self.note_x[l], int(start_y) + 56), (self.note_x[r], int(stop_y) + 56)))
+                    Line(self.screen, (self.note_x[l], int(start_y) + 42), (self.note_x[r], int(stop_y) + 42)))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
