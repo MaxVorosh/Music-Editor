@@ -518,16 +518,6 @@ class Melodie(Window):
         D.move(31 + 154, 506)
         D.set_func(self.add_note, 'D', 2)
         self.notes['D'].append(D)
-        C_ = Button(self, 'data\\Sprites\\black.png')
-        C_.resize(15, 67)
-        C_.move(23 + 154, 510)
-        C_.set_func(self.sharp_or_flat, 'CD', 2)
-        self.notes['C#'].append(C_)
-        D_ = Button(self, 'data\\Sprites\\black.png')
-        D_.resize(15, 67)
-        D_.move(50 + 154, 510)
-        D_.set_func(self.sharp_or_flat, 'DE', 2)
-        self.notes['D#'].append(D_)
         for i in range(2):
             E = Button(self, 'data\\Sprites\\E.png')
             E.resize(23, 124)
@@ -569,6 +559,16 @@ class Melodie(Window):
             A_.move(140 + i * 154, 510)
             A_.set_func(self.sharp_or_flat, 'AB', i + 1)
             self.notes['A#'].append(A_)
+        C_ = Button(self, 'data\\Sprites\\black.png')
+        C_.resize(15, 67)
+        C_.move(23 + 154, 510)
+        C_.set_func(self.sharp_or_flat, 'CD', 2)
+        self.notes['C#'].append(C_)
+        D_ = Button(self, 'data\\Sprites\\black.png')
+        D_.resize(15, 67)
+        D_.move(50 + 154, 510)
+        D_.set_func(self.sharp_or_flat, 'DE', 2)
+        self.notes['D#'].append(D_)
         self.do_pause()
 
     def draw_body(self):
@@ -793,7 +793,7 @@ class Melodie(Window):
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
-                else:
+                elif i < len(self.body) - 2 and max(start - 2, -1) - (len(self.body) - 2) > 1:
                     self.union_lines.pop()
                 w += ans[1]
             if ans != (0, 0) and second != cur:
@@ -904,17 +904,21 @@ class Melodie(Window):
             start_y = max_y + (self.note_x[max_y_ind] - self.note_x[l]) * tn
             stop_y = max_y - (self.note_x[r] - self.note_x[max_y_ind]) * tn
             if second_max_y_ind < max_y_ind:
-                start_y, stop_y = stop_y, start_y
+                start_y = max_y - (self.note_x[max_y_ind] - self.note_x[l]) * tn
+                stop_y = max_y + (self.note_x[r] - self.note_x[max_y_ind]) * tn
         else:
             if min_y == second_min_y:
                 tn = 0
             else:
-                tn = (min_y - second_min_y) / (self.note_x[second_min_y_ind] - self.note_x[min_y_ind])
+                tn = (min_y - second_min_y) / abs(self.note_x[second_min_y_ind] - self.note_x[min_y_ind])
             start_y = min_y + (self.note_x[min_y_ind] - self.note_x[l]) * tn
             stop_y = min_y - (self.note_x[r] - self.note_x[min_y_ind]) * tn
             # if second_min_y_ind > min_y_ind:
             #     start_y, stop_y = stop_y, start_y
-        print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
+            if second_min_y_ind < min_y_ind:
+                start_y = min_y - (self.note_x[min_y_ind] - self.note_x[l]) * tn
+                stop_y = min_y + (self.note_x[r] - self.note_x[min_y_ind]) * tn
+        # print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
         # print((self.note_x[max_y_ind] - self.note_x[l]) * tn, (self.note_x[r] - self.note_x[max_y_ind]) * tn)
         cnt = -1
         for i in self.note_group:
@@ -922,16 +926,20 @@ class Melodie(Window):
                 cnt += 1
                 if l <= cnt <= r:
                     if not fl:
-                        need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 5
+                        need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 49
+                        if start_y < stop_y:
+                            need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 49
                     else:
                         need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                    print(need_y)
-                    print(i.rect.y, i.rect.y + i.size[1])
+                        if start_y < stop_y:
+                            need_y = max_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
+                    # print(need_y)
+                    # print(i.rect.y, i.rect.y + i.size[1])
                     if fl:
                         self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
                                                (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
                     else:
-                        self.union_lines.append(Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 5)),
+                        self.union_lines.append(Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
                                                      (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2))
 
         if fl:
