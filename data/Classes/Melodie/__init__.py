@@ -46,6 +46,7 @@ class Melodie(Window):
         self.note_y = []
         self.first_note = []
         self.note_line = []
+        self.union_lines = []
         self.ui()
         self.run()
 
@@ -170,6 +171,8 @@ class Melodie(Window):
             for line in self.none_tact_lines:
                 line.draw()
             for line in self.note_line:
+                line.draw()
+            for line in self.union_lines:
                 line.draw()
             pygame.display.flip()
 
@@ -790,6 +793,8 @@ class Melodie(Window):
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
+                else:
+                    self.union_lines.pop()
                 w += ans[1]
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
@@ -869,8 +874,22 @@ class Melodie(Window):
             stop_y = min_y - (self.note_x[r] - self.note_x[min_y_ind]) * tn
             # if second_min_y_ind > min_y_ind:
             #     start_y, stop_y = stop_y, start_y
-        # print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
+        print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
         # print((self.note_x[max_y_ind] - self.note_x[l]) * tn, (self.note_x[r] - self.note_x[max_y_ind]) * tn)
+        cnt = -1
+        for i in self.note_group:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                cnt += 1
+                if l <= cnt <= r:
+                    if fl:
+                        need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn
+                    else:
+                        need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
+                    # print(need_y)
+                    # print(i.rect.y, i.rect.y + i.size[1])
+                    self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
+                                               (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
+
         if fl:
             self.none_tact_lines.append(
                 Line(self.screen, (self.note_x[l] + 15, int(start_y)), (self.note_x[r] + 15, int(stop_y))))
