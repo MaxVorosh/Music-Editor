@@ -833,29 +833,69 @@ class Melodie(Window):
                     elif not fl and i.start_up:
                         i.change_up()
                     self.note_y[cnt] = i.rect.y
-        max_y, second_max_y = 0, 0
-        min_y, second_min_y = 1000, 1000
-        max_y_ind, second_max_y_ind = -1, -1
-        min_y_ind, second_min_y_ind = -1, -1
+        first_max_y, first_second_max_y = 0, 0
+        second_max_y, second_second_max_y = 0, 0
+        first_min_y, first_second_min_y = 1000, 1000
+        second_min_y, second_second_min_y = 1000, 1000
+        first_max_y_ind, first_second_max_y_ind = -1, -1
+        second_max_y_ind, second_second_max_y_ind = -1, -1
+        first_min_y_ind, first_second_min_y_ind = -1, -1
+        second_min_y_ind, second_second_min_y_ind = -1, -1
         for i in range(l, r + 1):
-            if max_y < self.note_y[i]:
-                second_max_y = max_y
-                second_max_y_ind = max_y_ind
-                max_y = self.note_y[i]
-                max_y_ind = i
-            elif second_max_y < self.note_y[i]:
+            if first_max_y < self.note_y[i]:
+                first_second_max_y = first_max_y
+                first_second_max_y_ind = first_max_y_ind
+                first_max_y = self.note_y[i]
+                first_max_y_ind = i
+            elif first_second_max_y < self.note_y[i]:
+                first_second_max_y = self.note_y[i]
+                first_second_max_y_ind = i
+            if first_min_y > self.note_y[i]:
+                first_second_min_y = first_min_y
+                first_second_min_y_ind = first_min_y_ind
+                first_min_y = self.note_y[i]
+                first_min_y_ind = i
+            elif first_second_min_y > self.note_y[i]:
+                first_second_min_y = self.note_y[i]
+                first_second_min_y_ind = i
+            if second_max_y <= self.note_y[i]:
+                second_second_max_y = second_max_y
+                second_second_max_y_ind = second_max_y_ind
                 second_max_y = self.note_y[i]
                 second_max_y_ind = i
-            if min_y > self.note_y[i]:
-                second_min_y = min_y
-                second_min_y_ind = min_y_ind
-                min_y = self.note_y[i]
-                min_y_ind = i
-            elif second_min_y > self.note_y[i]:
+            elif second_second_max_y <= self.note_y[i]:
+                second_second_max_y = self.note_y[i]
+                second_second_max_y_ind = i
+            if second_min_y >= self.note_y[i]:
+                second_second_min_y = second_min_y
+                second_second_min_y_ind = second_min_y_ind
                 second_min_y = self.note_y[i]
                 second_min_y_ind = i
+            elif second_second_min_y >= self.note_y[i]:
+                second_second_min_y = self.note_y[i]
+                second_second_min_y_ind = i
             # print(min_y, second_min_y, min_y_ind, second_min_y_ind, self.note_y[i])
         # print(min_y, second_min_y, min_y_ind, second_min_y_ind, l, r)
+        if first_min_y_ind < first_second_min_y_ind:
+            min_y = first_min_y
+            second_min_y = second_second_min_y
+            min_y_ind = first_min_y_ind
+            second_min_y_ind = second_second_min_y_ind
+        else:
+            min_y = second_min_y
+            second_min_y = first_second_min_y
+            min_y_ind = second_min_y_ind
+            second_min_y_ind = first_second_min_y_ind
+        if first_max_y_ind < first_second_max_y_ind:
+            max_y = first_max_y
+            second_max_y = second_second_max_y
+            max_y_ind = first_max_y_ind
+            second_max_y_ind = second_second_max_y_ind
+        else:
+            max_y = second_max_y
+            second_max_y = first_second_max_y
+            max_y_ind = second_max_y_ind
+            second_max_y_ind = first_second_max_y_ind
         if not fl:
             if max_y == second_max_y:
                 tn = 0
@@ -881,14 +921,18 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
-                    if fl:
-                        need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn
+                    if not fl:
+                        need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 5
                     else:
                         need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                    # print(need_y)
-                    # print(i.rect.y, i.rect.y + i.size[1])
-                    self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
+                    print(need_y)
+                    print(i.rect.y, i.rect.y + i.size[1])
+                    if fl:
+                        self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
                                                (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
+                    else:
+                        self.union_lines.append(Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 5)),
+                                                     (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2))
 
         if fl:
             self.none_tact_lines.append(
