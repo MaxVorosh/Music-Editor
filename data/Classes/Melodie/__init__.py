@@ -763,7 +763,7 @@ class Melodie(Window):
         if all:
             cur = 0
             w = 0
-            for i in range(1, len(self.body)):
+            for i in range(len(self.body)):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
                 if not ans[0] or ans[1] + w > 1 or ans[1] > 1 / 8:
                     self.union_notes(cur, i - 1, ans[1] == 1 / 8)
@@ -788,7 +788,8 @@ class Melodie(Window):
                 if i == len(self.body) - 1:
                     fl = ans[1] == 1 / 8
             ans = (0, 0)
-            for i in range(len(self.body) - 2, max(start - 2, -1), -1):
+            print(start)
+            for i in range(len(self.body) - 2, max(start - 1, -1), -1):
                 ans = self.check_union(self.body[cur][-1], self.body[i][-1])
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
@@ -827,10 +828,10 @@ class Melodie(Window):
                 if l <= cnt <= r:
                     i.change_image('quater', (15, 49))
                     # print(i.start_up)
-                    if fl and not i.start_up:
+                    if fl and not i.up:
                         i.change_up()
                         # print(11)
-                    elif not fl and i.start_up:
+                    elif not fl and i.up:
                         i.change_up()
                     self.note_y[cnt] = i.rect.y
         first_max_y, first_second_max_y = 0, 0
@@ -918,7 +919,7 @@ class Melodie(Window):
             if second_min_y_ind < min_y_ind:
                 start_y = min_y - (self.note_x[min_y_ind] - self.note_x[l]) * tn
                 stop_y = min_y + (self.note_x[r] - self.note_x[min_y_ind]) * tn
-        # print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y)
+        print(tn, max_y_ind, self.note_x, max_y, second_max_y, start_y, stop_y, self.note_y, min_y_ind, min_y, second_min_y)
         # print((self.note_x[max_y_ind] - self.note_x[l]) * tn, (self.note_x[r] - self.note_x[max_y_ind]) * tn)
         cnt = -1
         for i in self.note_group:
@@ -930,10 +931,10 @@ class Melodie(Window):
                         if start_y < stop_y:
                             need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 49
                     else:
-                        need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
+                        need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
                         if start_y < stop_y:
-                            need_y = max_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                    # print(need_y)
+                            need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
+                    print(need_y)
                     # print(i.rect.y, i.rect.y + i.size[1])
                     if fl:
                         self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
@@ -944,16 +945,16 @@ class Melodie(Window):
 
         if fl:
             self.none_tact_lines.append(
-                Line(self.screen, (self.note_x[l] + 15, int(start_y)), (self.note_x[r] + 15, int(stop_y))))
+                Line(self.screen, (self.note_x[l] + 15, round(start_y)), (self.note_x[r] + 15, round(stop_y))))
             if not is_eight:
                 self.none_tact_lines.append(
-                    Line(self.screen, (self.note_x[l] + 15, int(start_y) + 7), (self.note_x[r] + 15, int(stop_y) + 7)))
+                    Line(self.screen, (self.note_x[l] + 15, round(start_y) + 7), (self.note_x[r] + 15, round(stop_y) + 7)))
         else:
             self.none_tact_lines.append(
-                Line(self.screen, (self.note_x[l], int(start_y) + 49), (self.note_x[r], int(stop_y) + 49)))
+                Line(self.screen, (self.note_x[l], round(start_y) + 49), (self.note_x[r], round(stop_y) + 49)))
             if not is_eight:
                 self.none_tact_lines.append(
-                    Line(self.screen, (self.note_x[l], int(start_y) + 42), (self.note_x[r], int(stop_y) + 42)))
+                    Line(self.screen, (self.note_x[l], round(start_y) + 42), (self.note_x[r], round(stop_y) + 42)))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
