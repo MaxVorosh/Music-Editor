@@ -796,9 +796,10 @@ class Melodie(Window):
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
-                elif i < len(self.body) - 2 and max(start - 2, -1) - (len(self.body) - 2) > 1:
-                    self.union_lines.pop()
                 w += ans[1]
+            if cur - second > 1:
+                for i in range(second, cur):
+                    self.union_lines.pop()
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
@@ -823,14 +824,14 @@ class Melodie(Window):
         fl = up >= down
         # print(fl)
         # print(up, down)
-        print(l, r)
+        # print(l, r)
         for i in self.note_group:
             # print(i.rect.y)
             # print(i.image_name)
             if i.image_name in ['quater', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
-                    # print(i.up, fl)
+                    print(i.up, fl)
                     if fl ^ i.up:
                         i.change_up()
                         # print(11, i.up)
