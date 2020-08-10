@@ -25,13 +25,13 @@ class Note(pygame.sprite.Sprite):
     def change_image(self, image, size):
         x, y = self.rect.x, self.rect.y
         self.image_name = image
-        if self.start_up:
+        if self.up:
             self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + image + ".png"), size)
         else:
             self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + image + "_down.png"), size)
         self.rect = self.image.get_rect()
         self.rect.x = x
-        if self.start_up:
+        if self.up:
             self.rect.y = y - size[1] + self.size[1]
         else:
             self.rect.y = y
@@ -42,9 +42,11 @@ class Note(pygame.sprite.Sprite):
             self.up = not self.up
             x, y = self.rect.x, self.rect.y
             if self.up:
-                self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + self.image_name + ".png"), self.size)
+                self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + self.image_name + ".png"),
+                                                    self.size)
             else:
-                self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + self.image_name + "_down.png"), self.size)
+                self.image = pygame.transform.scale(
+                    pygame.image.load("data\\Sprites\\" + self.image_name + "_down.png"), self.size)
             self.rect = self.image.get_rect()
             self.rect.x = x
             if self.up:

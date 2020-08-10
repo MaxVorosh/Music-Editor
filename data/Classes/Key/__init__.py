@@ -23,6 +23,7 @@ class Key(Button):
 
     def update(self, stage):
         if stage < 5:
+            self.window.is_violin = not self.window.is_violin
             for key in self.window.keys:
                 key.is_violin = not key.is_violin
                 if key.is_violin:
