@@ -117,6 +117,8 @@ class Melodie(Window):
                     if event.button == 1:
                         self.click(event.pos)
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_DELETE:
+                        self.delete_note()
                     if 3 <= self.stage <= 4:
                         chis = -1
                         if event.key == pygame.K_2:
@@ -390,6 +392,11 @@ class Melodie(Window):
                 data.append(id[0])
                 con.commit()
                 con.close()
+                if self.first_note:
+                    if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1]:
+                        self.first_note.append(''.join(self.cur_notes))
+                else:
+                    self.first_note.append(''.join(self.cur_notes))
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -418,10 +425,10 @@ class Melodie(Window):
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
-                if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.start_up) or (
-                        128 <= self.note_y[-1] + 14 <= 212 and not n.start_up)):
+                if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
+                        128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
                     # print(self.note_y[-1], size[1])
-                    if n.start_up:
+                    if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
                                  (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
@@ -581,7 +588,7 @@ class Melodie(Window):
                 add = -20
                 # self.note_symb.append((note[1], note[2]))
                 if self.first_note:
-                    if self.first_note[-1] != note[2]:
+                    if self.first_note[-1] != note[2] or self.weight == 0:
                         self.first_note.append(note[2])
                 else:
                     self.first_note.append(note[2])
@@ -656,10 +663,10 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.start_up) or (
-                            128 <= self.note_y[-1] + 14 <= 212 and not n.start_up)):
+                    if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
+                            128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
                         # print(self.note_y[-1], size[1])
-                        if n.start_up:
+                        if n.up:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
                                      (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
@@ -925,6 +932,37 @@ class Melodie(Window):
         cur = con.cursor()
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
-        return ((sample_note[0] - sample_note[0] // 2 * sample_note[1] == current_note[0] - current_note[0] // 2 *
+        return ((sample_note[0] - sample_note[0] / 2 * sample_note[1] == current_note[0] - current_note[0] / 2 *
                  current_note[1]) and not (sample_note[1] and current_note[1]),
-                current_note[0] - current_note[0] // 2 * current_note[1])
+                current_note[0] - current_note[0] / 2 * current_note[1])
+
+    def delete_note(self):
+        print(self.first_note)
+        if not self.body[0]:
+            return
+        con = sqlite3.connect('data\\db\\Melodies.db')
+        cur = con.cursor()
+        delete_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
+        weight = delete_note[0] + delete_note[0] / 2 * delete_note[1]
+        self.body.pop()
+        self.note_x.pop()
+        self.note_y.pop()
+        self.weight -= weight
+        cnt = -1
+        for i in self.note_group:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                cnt += 1
+                if cnt == len(self.body) + 1:
+                    if not ((128 <= self.note_y[-1] + i.size[1] - 14 <= 212 and i.up) or (
+                            128 <= self.note_y[-1] + 14 <= 212 and not i.up)):
+                        self.note_line.pop()
+                    i.kill()
+        if not self.body:
+            self.body = [[]]
+            self.first_note.pop()
+            return
+        last_note = cur.execute("SELECT Note FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
+        if last_note != self.first_note[-1] or self.weight == 0:
+            self.first.pop()
+            self.union_lines.pop()
+            self.union_notes_if_it_can()
