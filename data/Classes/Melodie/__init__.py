@@ -394,9 +394,9 @@ class Melodie(Window):
                 con.close()
                 if self.first_note:
                     if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1]:
-                        self.first_note.append(''.join(self.cur_notes))
+                        self.first_note.append(weight)
                 else:
-                    self.first_note.append(''.join(self.cur_notes))
+                    self.first_note.append(weight)
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -419,7 +419,7 @@ class Melodie(Window):
                          self.up_note[self.oct][self.cur_notes[note]] + add, size, True)
                 self.note_group.add(n)
                 if self.have_point:
-                    self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
+                    self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
                                              self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
                     self.points += 1
@@ -427,7 +427,6 @@ class Melodie(Window):
                 self.note_y.append(n.rect.y)
                 if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
                         128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
-                    # print(self.note_y[-1], size[1])
                     if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
@@ -589,9 +588,9 @@ class Melodie(Window):
                 # self.note_symb.append((note[1], note[2]))
                 if self.first_note:
                     if self.first_note[-1] != note[2] or self.weight == 0:
-                        self.first_note.append(note[2])
+                        self.first_note.append(note[3])
                 else:
-                    self.first_note.append(note[2])
+                    self.first_note.append(note[3])
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -665,7 +664,6 @@ class Melodie(Window):
                     self.note_x.append(n.rect.x)
                     if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
                             128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
-                        # print(self.note_y[-1], size[1])
                         if n.up:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
@@ -797,7 +795,6 @@ class Melodie(Window):
                 if i == len(self.body) - 1:
                     fl = ans[1] == 1 / 8
             ans = (0, 0)
-            # print(start)
             for i in range(len(self.body) - 2, max(start - 1, -1), -1):
                 ans = self.check_union(self.body[cur][-1], self.body[i][-1])
                 if not ans[0] or ans[1] > 1 / 8:
@@ -829,20 +826,12 @@ class Melodie(Window):
                         down += 1
         cnt = -1
         fl = up >= down
-        # print(fl)
-        # print(up, down)
-        # print(l, r)
         for i in self.note_group:
-            # print(i.rect.y)
-            # print(i.image_name)
             if i.image_name in ['quater', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
-                    print(i.up, fl)
                     if fl ^ i.up:
                         i.change_up()
-                        # print(11, i.up)
-                    print(cnt, i.up)
                     i.change_image('quater', (15, 49))
                     self.note_y[cnt] = i.rect.y
         max_y, min_y = 0, 1000
@@ -856,8 +845,6 @@ class Melodie(Window):
             if min_y > self.note_y[i]:
                 min_y = self.note_y[i]
                 min_y_ind = i
-            # print(min_y, second_min_y, min_y_ind, second_min_y_ind, self.note_y[i])
-        # print(min_y, second_min_y, min_y_ind, second_min_y_ind, l, r)
         for i in range(l, r + 1):
             cur_tn = 5
             if not fl:
@@ -890,8 +877,6 @@ class Melodie(Window):
             if second_ind < min_y_ind:
                 start_y = min_y - (self.note_x[min_y_ind] - self.note_x[l]) * tn
                 stop_y = min_y + (self.note_x[r] - self.note_x[min_y_ind]) * tn
-        print(tn, max_y_ind, self.note_x, max_y, start_y, stop_y, self.note_y, min_y_ind, min_y)
-        # print((self.note_x[max_y_ind] - self.note_x[l]) * tn, (self.note_x[r] - self.note_x[max_y_ind]) * tn)
         cnt = -1
         for i in self.note_group:
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
@@ -905,8 +890,6 @@ class Melodie(Window):
                         need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
                         if start_y < stop_y:
                             need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                    # print(need_y)
-                    # print(i.rect.y, i.rect.y + i.size[1])
                     if fl:
                         self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
                                                (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
@@ -937,7 +920,6 @@ class Melodie(Window):
                 current_note[0] - current_note[0] / 2 * current_note[1])
 
     def delete_note(self):
-        print(self.first_note)
         if not self.body[0]:
             return
         con = sqlite3.connect('data\\db\\Melodies.db')
@@ -945,6 +927,7 @@ class Melodie(Window):
         delete_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
         weight = delete_note[0] + delete_note[0] / 2 * delete_note[1]
         self.body.pop()
+        y = self.note_y[-1]
         self.note_x.pop()
         self.note_y.pop()
         self.weight -= weight
@@ -952,10 +935,13 @@ class Melodie(Window):
         for i in self.note_group:
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                 cnt += 1
-                if cnt == len(self.body) + 1:
-                    if not ((128 <= self.note_y[-1] + i.size[1] - 14 <= 212 and i.up) or (
-                            128 <= self.note_y[-1] + 14 <= 212 and not i.up)):
+                if cnt == len(self.body):
+                    if not ((128 <= y + i.size[1] - 14 <= 212 and i.up) or (
+                            128 <= y + 14 <= 212 and not i.up)):
                         self.note_line.pop()
+                    i.kill()
+            else:
+                if cnt >= len(self.body) - 1:
                     i.kill()
         if not self.body:
             self.body = [[]]
@@ -963,6 +949,8 @@ class Melodie(Window):
             return
         last_note = cur.execute("SELECT Note FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
         if last_note != self.first_note[-1] or self.weight == 0:
-            self.first.pop()
+            self.first_note.pop()
+            #TODO Проверка на удаление union_lines
+        else:
             self.union_lines.pop()
             self.union_notes_if_it_can()
