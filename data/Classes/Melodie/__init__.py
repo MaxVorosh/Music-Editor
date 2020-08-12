@@ -394,9 +394,11 @@ class Melodie(Window):
                 con.close()
                 if self.first_note:
                     if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1]:
-                        self.first_note.append(weight)
+                        self.first_note.append((weight, 1))
+                    else:
+                        self.first_note[-1][1] += 1
                 else:
-                    self.first_note.append(weight)
+                    self.first_note.append((weight, 1))
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -588,9 +590,11 @@ class Melodie(Window):
                 # self.note_symb.append((note[1], note[2]))
                 if self.first_note:
                     if self.first_note[-1] != note[2] or self.weight == 0:
-                        self.first_note.append(note[3])
+                        self.first_note.append((note[3], 1))
+                    else:
+                        self.first_note[-1][1] += 1
                 else:
-                    self.first_note.append(note[3])
+                    self.first_note.append((note[3], 1))
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -950,7 +954,9 @@ class Melodie(Window):
         last_note = cur.execute("SELECT Note FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
         if last_note != self.first_note[-1] or self.weight == 0:
             self.first_note.pop()
-            #TODO Проверка на удаление union_lines
+            if self.first_note[-1][1] > 1:
+                self.union_lines.pop()
         else:
             self.union_lines.pop()
             self.union_notes_if_it_can()
+        #TODO Удаление паузы
