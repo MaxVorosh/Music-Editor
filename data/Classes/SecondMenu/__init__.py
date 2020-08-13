@@ -5,6 +5,7 @@ from ..Melodie import Melodie
 from ..Name import Name
 from ..KeyWindow import KeyWindow
 from data.Functions.make_fon_by_rect import make_fon_by_rect
+from data.Functions.make_fon_up import make_fon_up
 import sys
 import sqlite3
 
@@ -13,6 +14,7 @@ class SecondMenu(Window):
     def __init__(self):
         super().__init__()
         self.running = True
+        self.delete = False
         self.ui()
         self.run()
 
@@ -51,6 +53,11 @@ class SecondMenu(Window):
         add.move(10 + self.length % 2 * 365, 100 + self.length // 2 * 185)
         add.set_func(self.go_next)
         self.melodies.append(add)
+        self.delete_symb = Button(self, "data\\Sprites\\delete.png")
+        self.delete_symb.resize(70, 75)
+        self.delete_symb.move(560, 560)
+        self.delete_symb.set_func(self.delete_btn)
+        self.write_text = False
         self.set_background('data\\Sprites\\bg.jpg')
 
     def GoToLast(self):
@@ -77,6 +84,8 @@ class SecondMenu(Window):
                     if event.button == 1:
                         self.click(event.pos)
                 if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_DELETE:
+                        self.delete_btn()
                     if event.key == pygame.K_UP and start != 0:
                         start -= 2
                         for btn in self.melodies:
@@ -96,6 +105,9 @@ class SecondMenu(Window):
             if self.background:
                 self.screen.blit(self.background, (0, 0))
             self.sprites.draw(self.screen)
+            if self.write_text:
+                text = ['Нажмите на мелодию, которую', 'хотите удалить']
+                make_fon_up(self.screen, text, 90)
             for i in range(start, self.length):
                 if i % 2 == 0:
                     make_fon_by_rect(self.screen, self.names[i].split('\n'), 10, 266, 100 + (i - start) // 2 * 185,
@@ -105,9 +117,28 @@ class SecondMenu(Window):
                                      100 + (i - start) // 2 * 185 + 160, 'white')
             pygame.display.flip()
 
+    def delete_melodie(self, id, i):
+        con = sqlite3.connect('data\\db\\Melodies.db')
+        cur = con.cursor()
+        cur.execute('DELETE FROM Melodies WHEN id = ' + str(id))
+        con.commit()
+        con.close()
+        self.change_btn_function(self.go_to_melody)
+
+    def change_btn_function(self, func):
+        # print(self.melodies)
+        # print(self.ids)
+        for i in range(len(self.melodies) - 1):
+            self.melodies[i].set_func(func, self.ids[i], i)
+
+    def delete_btn(self):
+        self.write_text = True
+        self.change_btn_function(self.delete_melodie)
+
+
     def exitFunc(self):
         pygame.quit()
         sys.exit()
 
-    def go_to_melody(self, id):
+    def go_to_melody(self, id, i):
         Melodie(id)

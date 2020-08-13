@@ -919,6 +919,7 @@ class Melodie(Window):
         cur = con.cursor()
         sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
         current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
+        con.close()
         return ((sample_note[0] - sample_note[0] / 2 * sample_note[1] == current_note[0] - current_note[0] / 2 *
                  current_note[1]) and not (sample_note[1] and current_note[1]),
                 current_note[0] - current_note[0] / 2 * current_note[1])
@@ -959,4 +960,5 @@ class Melodie(Window):
         else:
             self.union_lines.pop()
             self.union_notes_if_it_can()
+        con.close()
         #TODO Удаление паузы
