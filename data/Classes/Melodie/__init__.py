@@ -308,7 +308,7 @@ class Melodie(Window):
                 if not id:
                     cur.execute(
                         'INSERT INTO Notes(Note, Octave, weight, Point) Values ("' + self.cur_notes[note] + '", 0, '
-                            + ', ' + str(weight) + ', ' + str(int(self.have_point)) + ')')
+                        + str(weight) + ', ' + str(int(self.have_point)) + ')')
                 id = cur.execute(
                     'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = 0 ' +
                     ' AND weight = ' + str(weight) + ' AND Point = ' + str(int(self.have_point))).fetchall()[0]
@@ -333,16 +333,12 @@ class Melodie(Window):
                     name = 'very_small_pause'
                     size = (28, 56)
                     y = 168
-                self.note_group.add(Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
-                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False))
-                if self.first_note:
-                    if self.weight - weight == 0 or weight != self.first_note[-1][1]:
-                        self.first_note.append(('P', weight, False, 1, 0))
-                    else:
-                        self.first_note[-1][3] = self.first_note[-1][3] + 1
-                        self.first_note[-1][2] = True
-                else:
-                    self.first_note.append(('P', weight, False, 1, 0))
+                n = Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
+                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False)
+                self.note_group.add(n)
+                self.note_y.append(n.rect.y)
+                self.note_x.append(n.rect.x)
+                self.first_note.append(['P', weight, False, 1, 0])
                 con.commit()
                 con.close()
             elif self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
@@ -403,12 +399,12 @@ class Melodie(Window):
                 print(self.first_note)
                 if self.first_note:
                     if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
-                        self.first_note.append((self.cur_notes, weight, False, 1, self.oct))
+                        self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
                     else:
                         self.first_note[-1][3] = self.first_note[-1][3] + 1
                         self.first_note[-1][2] = True
                 else:
-                    self.first_note.append((self.cur_notes, weight, False, 1, self.oct))
+                    self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -602,13 +598,13 @@ class Melodie(Window):
                 cur_notes += (note[1])
                 if i == len(step) - 1:
                     if self.first_note:
-                        if self.first_note[-1][1] != note[3] or self.weight == 0:
-                            self.first_note.append((cur_notes, note[3], False, 1, note[2]))
+                        if self.first_note[-1][1] != note[3] or self.weight == 0 or cur_notes[0] == 'P':
+                            self.first_note.append([cur_notes, note[3], False, 1, note[2]])
                         else:
                             self.first_note[-1][3] = self.first_note[-1][3] + 1
-                            self.first_note[2] = True
+                            self.first_note[-1][2] = True
                     else:
-                        self.first_note.append((cur_notes, note[3], False, 1, note[2]))
+                        self.first_note.append([cur_notes, note[3], False, 1, note[2]])
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -617,6 +613,7 @@ class Melodie(Window):
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
                 if note[1] == 'P':
+                    fl = True
                     add = 0
                     if note[3] == 1:
                         name = 'full_pause'
@@ -800,7 +797,7 @@ class Melodie(Window):
                 self.union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
         else:
             cur = len(self.body) - 1
-            second = 0
+            second = cur
             ans = (0, 0)
             w = 0
             start = 0
@@ -910,7 +907,7 @@ class Melodie(Window):
                             need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
                     if fl:
                         self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
-                                               (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
+                                                     (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
                     else:
                         self.union_lines.append(Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
                                                      (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2))
@@ -920,7 +917,8 @@ class Melodie(Window):
                 Line(self.screen, (self.note_x[l] + 15, round(start_y)), (self.note_x[r] + 15, round(stop_y))))
             if not is_eight:
                 self.none_tact_lines.append(
-                    Line(self.screen, (self.note_x[l] + 15, round(start_y) + 7), (self.note_x[r] + 15, round(stop_y) + 7)))
+                    Line(self.screen, (self.note_x[l] + 15, round(start_y) + 7),
+                         (self.note_x[r] + 15, round(stop_y) + 7)))
         else:
             self.none_tact_lines.append(
                 Line(self.screen, (self.note_x[l], round(start_y) + 49), (self.note_x[r], round(stop_y) + 49)))
@@ -952,7 +950,8 @@ class Melodie(Window):
         self.weight -= weight
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if cnt == len(self.body):
                     if not ((128 <= y + i.size[1] - 14 <= 212 and i.up) or (
@@ -969,10 +968,12 @@ class Melodie(Window):
         last_note = ''
         octave = 0
         for i in self.body[-1]:
-            rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(self.body[-1][i])).fetchall()[0]
+            rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
             last_note += rez[0]
             octave = rez[1]
-        if (last_note != self.first_note[-1][0] or octave != self.first_note[-1][-1]) or self.weight == 0:
+        print(last_note, self.first_note)
+        if (last_note != self.first_note[-1][0] or octave != self.first_note[-1][
+            -1]) or self.weight == 0 or last_note == 'P':
             self.first_note.pop()
             if self.first_note[-1][2]:
                 self.union_lines.pop()
@@ -995,4 +996,3 @@ class Melodie(Window):
                             i.kill()
                 self.add_note(last_note, octave)
         con.close()
-        #TODO Удаление паузы
