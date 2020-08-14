@@ -303,14 +303,14 @@ class Melodie(Window):
                 con = sqlite3.connect('data\\db\\Melodies.db')
                 cur = con.cursor()
                 id = cur.execute(
-                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = 0 ' +
                     ' AND weight = ' + str(weight) + ' AND Point = ' + str(int(self.have_point))).fetchall()
                 if not id:
                     cur.execute(
-                        'INSERT INTO Notes(Note, Octave, weight, Point) Values ("' + self.cur_notes[note] + '", ' + str(
-                            self.oct) + ', ' + str(weight) + ', ' + str(int(self.have_point)) + ')')
+                        'INSERT INTO Notes(Note, Octave, weight, Point) Values ("' + self.cur_notes[note] + '", 0, '
+                            + ', ' + str(weight) + ', ' + str(int(self.have_point)) + ')')
                 id = cur.execute(
-                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = ' + str(self.oct) +
+                    'SELECT id FROM Notes WHERE Note = "' + self.cur_notes[note] + '" AND Octave = 0 ' +
                     ' AND weight = ' + str(weight) + ' AND Point = ' + str(int(self.have_point))).fetchall()[0]
                 data.append(id[0])
                 if weight == 1:
@@ -335,6 +335,14 @@ class Melodie(Window):
                     y = 168
                 self.note_group.add(Note(name, 85 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False))
+                if self.first_note:
+                    if self.weight - weight == 0 or weight != self.first_note[-1][1]:
+                        self.first_note.append(('P', weight, False, 1, 0))
+                    else:
+                        self.first_note[-1][3] = self.first_note[-1][3] + 1
+                        self.first_note[-1][2] = True
+                else:
+                    self.first_note.append(('P', weight, False, 1, 0))
                 con.commit()
                 con.close()
             elif self.cur_notes[note] == '#' or self.cur_notes[note] == 'b' or self.cur_notes[note] == '|':
@@ -392,13 +400,15 @@ class Melodie(Window):
                 data.append(id[0])
                 con.commit()
                 con.close()
+                print(self.first_note)
                 if self.first_note:
-                    if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1]:
-                        self.first_note.append((weight, 1))
+                    if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
+                        self.first_note.append((self.cur_notes, weight, False, 1, self.oct))
                     else:
-                        self.first_note[-1][1] += 1
+                        self.first_note[-1][3] = self.first_note[-1][3] + 1
+                        self.first_note[-1][2] = True
                 else:
-                    self.first_note.append((weight, 1))
+                    self.first_note.append((self.cur_notes, weight, False, 1, self.oct))
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -581,6 +591,7 @@ class Melodie(Window):
 
     def draw_body(self):
         for step in self.body:
+            cur_notes = ''
             for i in range(len(step)):
                 fl = False
                 con = sqlite3.connect('data\\db\\Melodies.db')
@@ -588,13 +599,16 @@ class Melodie(Window):
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
                 # self.note_symb.append((note[1], note[2]))
-                if self.first_note:
-                    if self.first_note[-1] != note[2] or self.weight == 0:
-                        self.first_note.append((note[3], 1))
+                cur_notes += (note[1])
+                if i == len(step) - 1:
+                    if self.first_note:
+                        if self.first_note[-1][1] != note[3] or self.weight == 0:
+                            self.first_note.append((cur_notes, note[3], False, 1, note[2]))
+                        else:
+                            self.first_note[-1][3] = self.first_note[-1][3] + 1
+                            self.first_note[2] = True
                     else:
-                        self.first_note[-1][1] += 1
-                else:
-                    self.first_note.append((note[3], 1))
+                        self.first_note.append((cur_notes, note[3], False, 1, note[2]))
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -952,13 +966,33 @@ class Melodie(Window):
             self.body = [[]]
             self.first_note.pop()
             return
-        last_note = cur.execute("SELECT Note FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
-        if last_note != self.first_note[-1] or self.weight == 0:
+        last_note = ''
+        octave = 0
+        for i in self.body[-1]:
+            rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(self.body[-1][i])).fetchall()[0]
+            last_note += rez[0]
+            octave = rez[1]
+        if (last_note != self.first_note[-1][0] or octave != self.first_note[-1][-1]) or self.weight == 0:
             self.first_note.pop()
-            if self.first_note[-1][1] > 1:
+            if self.first_note[-1][2]:
                 self.union_lines.pop()
         else:
+            self.first_note[-1][3] = self.first_note[-1][3] - 1
             self.union_lines.pop()
             self.union_notes_if_it_can()
+            if self.first_note[-1][3] == 1:
+                self.body.pop()
+                for i in self.note_group:
+                    if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                        cnt += 1
+                        if cnt == len(self.body):
+                            if not ((128 <= y + i.size[1] - 14 <= 212 and i.up) or (
+                                    128 <= y + 14 <= 212 and not i.up)):
+                                self.note_line.pop()
+                            i.kill()
+                    else:
+                        if cnt >= len(self.body) - 1:
+                            i.kill()
+                self.add_note(last_note, octave)
         con.close()
         #TODO Удаление паузы
