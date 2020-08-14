@@ -36,22 +36,22 @@ class SecondMenu(Window):
         self.names = [i[1] for i in result]
         con.close()
         self.length = len(result)
+        add = Button(self, "data\\Sprites\\add_1.png")
+        add.resize(256, 160)
+        add.move(10 + self.length % 2 * 365, 100 + self.length // 2 * 185)
+        add.set_func(self.go_next)
         for i in range(self.length):
             if i % 2 == 0:
                 btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
                 btn.move(10, 100 + i // 2 * 185)
-                btn.set_func(self.go_to_melody, self.ids[i])
+                btn.set_func(self.go_to_melody, self.ids[i], 0)
             else:
                 btn = Button(self, "data\\Sprites\\old.png")
                 btn.resize(256, 160)
                 btn.move(375, 100 + i // 2 * 185)
-                btn.set_func(self.go_to_melody, self.ids[i])
+                btn.set_func(self.go_to_melody, self.ids[i], 0)
             self.melodies.append(btn)
-        add = Button(self, "data\\Sprites\\add_1.png")
-        add.resize(256, 160)
-        add.move(10 + self.length % 2 * 365, 100 + self.length // 2 * 185)
-        add.set_func(self.go_next)
         self.melodies.append(add)
         self.delete_symb = Button(self, "data\\Sprites\\delete.png")
         self.delete_symb.resize(70, 75)
@@ -104,10 +104,10 @@ class SecondMenu(Window):
             self.screen.fill((0, 0, 0))
             if self.background:
                 self.screen.blit(self.background, (0, 0))
-            self.sprites.draw(self.screen)
             if self.write_text:
                 text = ['Нажмите на мелодию, которую', 'хотите удалить']
                 make_fon_up(self.screen, text, 90)
+            self.sprites.draw(self.screen)
             for i in range(start, self.length):
                 if i % 2 == 0:
                     make_fon_by_rect(self.screen, self.names[i].split('\n'), 10, 266, 100 + (i - start) // 2 * 185,
@@ -120,14 +120,19 @@ class SecondMenu(Window):
     def delete_melodie(self, id, i):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
-        cur.execute('DELETE FROM Melodies WHEN id = ' + str(id))
+        cur.execute('DELETE FROM Melodies WHERE id = ' + str(id))
         con.commit()
         con.close()
+        self.melodies[-2].kill()
+        self.melodies.pop(i)
+        self.ids.pop(i)
+        self.write_text = False
+        self.names.pop(i)
+        self.length -= 1
         self.change_btn_function(self.go_to_melody)
+        self.melodies[-1].move(10 + self.length % 2 * 365, 100 + self.length // 2 * 185)
 
     def change_btn_function(self, func):
-        # print(self.melodies)
-        # print(self.ids)
         for i in range(len(self.melodies) - 1):
             self.melodies[i].set_func(func, self.ids[i], i)
 
