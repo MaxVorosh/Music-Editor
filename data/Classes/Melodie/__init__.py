@@ -397,8 +397,8 @@ class Melodie(Window):
                 con.commit()
                 con.close()
                 print(self.first_note)
-                if self.first_note:
-                    if self.weight - weight * self.have_point == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
+                if self.first_note and weight - self.have_point * weight / 2 <= 1 / 8:
+                    if self.weight - weight - weight * self.have_point / 2 == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
                         self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
                     else:
                         self.first_note[-1][3] = self.first_note[-1][3] + 1
@@ -597,7 +597,7 @@ class Melodie(Window):
                 # self.note_symb.append((note[1], note[2]))
                 cur_notes += (note[1])
                 if i == len(step) - 1:
-                    if self.first_note:
+                    if self.first_note and note[3] - note[3] * note[4] < 1 / 8:
                         if self.first_note[-1][1] != note[3] or self.weight == 0 or cur_notes[0] == 'P':
                             self.first_note.append([cur_notes, note[3], False, 1, note[2]])
                         else:
@@ -967,6 +967,7 @@ class Melodie(Window):
             return
         last_note = ''
         octave = 0
+        print(self.body[-1])
         for i in self.body[-1]:
             rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
             last_note += rez[0]
