@@ -396,7 +396,6 @@ class Melodie(Window):
                 data.append(id[0])
                 con.commit()
                 con.close()
-                print(self.first_note)
                 if self.first_note and weight - self.have_point * weight / 2 <= 1 / 8:
                     if self.weight - weight - weight * self.have_point / 2 == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
                         self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
@@ -948,6 +947,13 @@ class Melodie(Window):
         self.note_x.pop()
         self.note_y.pop()
         self.weight -= weight
+        if self.weight < 0:
+            self.weight += 1
+            cnt = -1
+            for i in self.lines:
+                cnt += 1
+                if cnt == len(self.lines) - 1:
+                    i.kill()
         cnt = -1
         for i in self.note_group:
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
@@ -967,20 +973,17 @@ class Melodie(Window):
             return
         last_note = ''
         octave = 0
-        print(self.body[-1])
         for i in self.body[-1]:
             rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
             last_note += rez[0]
             octave = rez[1]
-        print(last_note, self.first_note)
+        if self.first_note[-1][2]:
+            self.union_lines.pop()
         if (last_note != self.first_note[-1][0] or octave != self.first_note[-1][
             -1]) or self.weight == 0 or last_note == 'P':
             self.first_note.pop()
-            if self.first_note[-1][2]:
-                self.union_lines.pop()
         else:
             self.first_note[-1][3] = self.first_note[-1][3] - 1
-            self.union_lines.pop()
             self.union_notes_if_it_can()
             if self.first_note[-1][3] == 1:
                 self.body.pop()
