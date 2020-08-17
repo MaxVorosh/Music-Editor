@@ -174,7 +174,7 @@ class Melodie(Window):
                 line.draw()
             for line in self.note_line:
                 line.draw()
-            for line in self.union_lines:
+            for numb, line in self.union_lines:
                 line.draw()
             pygame.display.flip()
 
@@ -787,13 +787,13 @@ class Melodie(Window):
             for i in range(len(self.body)):
                 ans = self.check_union(self.body[i][-1], self.body[cur][-1])
                 if not ans[0] or ans[1] + w > 1 or ans[1] > 1 / 8:
-                    self.union_notes(cur, i - 1, ans[1] == 1 / 8)
+                    self.pre_union_notes(cur, i - 1, ans[1] == 1 / 8)
                     cur = i
                 w += ans[1]
                 if w > 1:
                     w -= 1
             if cur != len(self.body) - 1:
-                self.union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
+                self.pre_union_notes(cur, len(self.body) - 1, ans[1] == 1 / 8)
         else:
             cur = len(self.body) - 1
             second = cur
@@ -818,14 +818,28 @@ class Melodie(Window):
                     second = i
                 w += ans[1]
             if cur - second > 1:
-                for i in range(second, cur):
-                    self.union_lines.pop()
+                #TODO Исправить удаление линий
+                for i in range(len(self.union_lines)):
+                    if second <= self.union_lines[i][0] <= cur:
+                        self.union_lines.pop(i)
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
                     if ans[1] == 1 / 16:
                         self.none_tact_lines.pop()
-                self.union_notes(second, cur, fl)
+                self.pre_union_notes(second, cur, fl)
+
+    def pre_union_notes(self, second, cur, fl):
+        st = 1
+        while st <= cur - second + 1:
+            st *= 2
+        st //= 2
+        l = second
+        while l <= cur:
+            self.union_notes(l, l + st - 1, fl)
+            l = l + st + 1
+            while st > cur - second + 1:
+                st //= 2
 
     def union_notes(self, l, r, is_eight):
         if l >= r:
@@ -907,11 +921,11 @@ class Melodie(Window):
                         if start_y < stop_y:
                             need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
                     if fl:
-                        self.union_lines.append(Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
-                                                     (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2))
+                        self.union_lines.append((cnt, Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
+                                                     (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2)))
                     else:
-                        self.union_lines.append(Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
-                                                     (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2))
+                        self.union_lines.append((cnt, Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
+                                                     (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2)))
 
         if fl:
             self.none_tact_lines.append(
@@ -980,7 +994,8 @@ class Melodie(Window):
             last_note += rez[0]
             octave = rez[1]
         if self.first_note[-1][2]:
-            self.union_lines.pop()
+            if self.union_lines[-1][0] == len(self.note_y):
+                self.union_lines.pop()
         if ((last_note != self.first_note[-1][0] or octave != self.first_note[-1][-1])
                 or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
@@ -990,7 +1005,8 @@ class Melodie(Window):
             self.union_notes_if_it_can()
             if self.first_note[-1][3] == 1:
                 self.body.pop()
-                self.union_lines.pop()
+                if self.union_lines[-1][0] == len(self.note_y):
+                    self.union_lines.pop()
                 self.note_x.pop()
                 self.note_y.pop()
                 cnt = -1
