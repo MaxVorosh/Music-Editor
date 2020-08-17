@@ -10,6 +10,7 @@ from ..ClickedNote import ClickedNote
 from ..TactLine import TactLine
 from ..Line import Line
 from data.Functions.make_fon_by_rect import make_fon_by_rect
+from data.Functions.bin_low import bin_low
 
 
 class Melodie(Window):
@@ -818,10 +819,10 @@ class Melodie(Window):
                     second = i
                 w += ans[1]
             if cur - second > 1:
-                #TODO Исправить удаление линий
-                for i in range(len(self.union_lines)):
-                    if second <= self.union_lines[i][0] <= cur:
-                        self.union_lines.pop(i)
+                fir = bin_low([i[0] for i in self.union_lines], second - 1) + 1
+                sec = bin_low([i[0] for i in self.union_lines], cur)
+                for i in range(fir, sec + 1):
+                    self.union_lines.pop(fir)
             if ans != (0, 0) and second != cur:
                 if self.none_tact_lines:
                     self.none_tact_lines.pop()
