@@ -397,7 +397,7 @@ class Melodie(Window):
                 con.commit()
                 con.close()
                 if self.first_note and weight - self.have_point * weight / 2 <= 1 / 8:
-                    if self.weight - weight - weight * self.have_point / 2 == 0 or ''.join(self.cur_notes) != self.first_note[-1][0]:
+                    if self.weight - weight - weight * self.have_point / 2 == 0 or weight != self.first_note[-1][1]:
                         self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
                     else:
                         self.first_note[-1][3] = self.first_note[-1][3] + 1
@@ -814,6 +814,8 @@ class Melodie(Window):
                 if not ans[0] or ans[1] > 1 / 8:
                     second = i + 1
                     break
+                elif i == max(start - 1, -1) + 1:
+                    second = i
                 w += ans[1]
             if cur - second > 1:
                 for i in range(second, cur):
@@ -979,14 +981,17 @@ class Melodie(Window):
             octave = rez[1]
         if self.first_note[-1][2]:
             self.union_lines.pop()
-        if (last_note != self.first_note[-1][0] or octave != self.first_note[-1][
-            -1]) or self.weight == 0 or last_note == 'P':
+        if ((last_note != self.first_note[-1][0] or octave != self.first_note[-1][-1])
+                or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
         else:
+            self.none_tact_lines.pop()
             self.first_note[-1][3] = self.first_note[-1][3] - 1
             self.union_notes_if_it_can()
             if self.first_note[-1][3] == 1:
                 self.body.pop()
+                self.union_lines.pop()
+                cnt = -1
                 for i in self.note_group:
                     if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                         cnt += 1
@@ -998,5 +1003,9 @@ class Melodie(Window):
                     else:
                         if cnt >= len(self.body) - 1:
                             i.kill()
-                self.add_note(last_note, octave)
+                if not self.body:
+                    self.body = [[]]
+                self.cur_notes = [last_note]
+                self.oct = octave
+                self.draw_note(self.first_note[-1][1])
         con.close()
