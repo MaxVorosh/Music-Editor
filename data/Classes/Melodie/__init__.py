@@ -991,6 +991,8 @@ class Melodie(Window):
             if self.first_note[-1][3] == 1:
                 self.body.pop()
                 self.union_lines.pop()
+                self.note_x.pop()
+                self.note_y.pop()
                 cnt = -1
                 for i in self.note_group:
                     if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
