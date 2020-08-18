@@ -409,19 +409,24 @@ class Melodie(Window):
                 if weight == 1:
                     name = 'full'
                     size = (21, 14)
+                    line_size = 21
                     add = 0
                 elif weight == 0.5:
                     name = 'half'
                     size = (15, 49)
+                    line_size = 15
                 elif weight == 0.25:
                     name = 'quater'
                     size = (15, 49)
+                    line_size = 15
                 elif weight == 0.125:
                     name = 'small'
                     size = (30, 54)
+                    line_size = 19
                 elif weight == 0.0625:
                     name = 'very_small'
                     size = (30, 56)
+                    line_size = 18
                 n = Note(name, 85 + self.points * 7 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          self.up_note[self.oct][self.cur_notes[note]] + add, size, True)
@@ -438,11 +443,11 @@ class Melodie(Window):
                     if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
-                                 (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                                 (self.note_x[-1] + line_size + 4, self.note_y[-1] + size[1] - 4)))
                     else:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
-                                 (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
+                                 (self.note_x[-1] + line_size + 4, self.note_y[-1] + 11)))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -639,23 +644,28 @@ class Melodie(Window):
                     if note[3] == 1:
                         name = 'full'
                         size = (21, 14)
+                        line_size = 21
                         add = 0
                         fl = True
                     elif note[3] == 0.5:
                         name = 'half'
                         size = (15, 49)
+                        line_size = 15
                         fl = True
                     elif note[3] == 0.25:
                         name = 'quater'
                         size = (15, 49)
+                        line_size = 15
                         fl = True
                     elif note[3] == 0.125:
                         name = 'small'
                         size = (30, 54)
+                        line_size = 19
                         fl = True
                     elif note[3] == 0.0625:
                         name = 'very_small'
                         size = (30, 56)
+                        line_size = 18
                         fl = True
                     else:
                         if note[1] == '#':
@@ -683,11 +693,11 @@ class Melodie(Window):
                         if n.up:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
-                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
+                                     (self.note_x[-1] + line_size + 4, self.note_y[-1] + size[1] - 4)))
                         else:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
-                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
+                                     (self.note_x[-1] + line_size + 4, self.note_y[-1] + 11)))
                 if note[4]:
                     self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
