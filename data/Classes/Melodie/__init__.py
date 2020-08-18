@@ -178,6 +178,7 @@ class Melodie(Window):
             for numb, line in self.union_lines:
                 line.draw()
             pygame.display.flip()
+            # print(self.first_note)
 
     def exitFunc(self):
         self.save()
@@ -1006,6 +1007,8 @@ class Melodie(Window):
             self.union_notes_if_it_can()
             if self.first_note[-1][3] == 1:
                 self.body.pop()
+                self.first_note[-1][3] = self.first_note[-1][3] - 1
+                self.first_note[-1][2] = False
                 if self.union_lines[-1][0] == len(self.note_y):
                     self.union_lines.pop()
                 self.note_x.pop()
