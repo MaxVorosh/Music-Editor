@@ -178,7 +178,6 @@ class Melodie(Window):
             for numb, line in self.union_lines:
                 line.draw()
             pygame.display.flip()
-            # print(self.first_note)
 
     def exitFunc(self):
         self.save()
@@ -434,16 +433,16 @@ class Melodie(Window):
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
-                if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
-                        128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
+                if not ((123 <= self.note_y[-1] + size[1] - 14 <= 205 and n.up) or (
+                        123 <= self.note_y[-1] + 14 <= 205 and not n.up)):
                     if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
                                  (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
                     else:
                         self.note_line.append(
-                            Line(self.screen, (self.note_x[-1] - 7, self.note_y[-1] + 11),
-                                 (self.note_x[-1] + size[0] - 7, self.note_y[-1] + 11)))
+                            Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
+                                 (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
         if self.body[0]:
             self.body.append(data)
         else:
@@ -678,16 +677,17 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    if not ((128 <= self.note_y[-1] + size[1] - 14 <= 212 and n.up) or (
-                            128 <= self.note_y[-1] + 14 <= 212 and not n.up)):
+                    # print(self.note_y[-1] + size[1] - 14)
+                    if not ((123 < self.note_y[-1] + size[1] - 14 < 205 and n.up) or (
+                            123 < self.note_y[-1] + 14 < 205 and not n.up)):
                         if n.up:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
                                      (self.note_x[-1] + size[0] + 4, self.note_y[-1] + size[1] - 4)))
                         else:
                             self.note_line.append(
-                                Line(self.screen, (self.note_x[-1] - 7, self.note_y[-1] + 11),
-                                     (self.note_x[-1] + size[0] - 7, self.note_y[-1] + 11)))
+                                Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + 11),
+                                     (self.note_x[-1] + size[0] + 4, self.note_y[-1] + 11)))
                 if note[4]:
                     self.note_group.add(Note('point', 85 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 23,
@@ -838,8 +838,8 @@ class Melodie(Window):
         st //= 2
         l = second
         while l <= cur:
-            self.union_notes(l, l + st - 1, fl)
-            l = l + st + 1
+            self.union_notes(l, min(l + st - 1, cur), fl)
+            l = l + st
             while st > cur - second + 1:
                 st //= 2
 
