@@ -867,6 +867,7 @@ class Melodie(Window):
                     else:
                         down += 1
         cnt = -1
+        ind = l
         fl = up >= down
         for i in self.note_group:
             if i.image_name in ['quater', 'small', 'very_small']:
@@ -876,6 +877,18 @@ class Melodie(Window):
                         i.change_up()
                     i.change_image('quater', (15, 49))
                     self.note_y[cnt] = i.rect.y
+                    line_size = 15
+                    print(not ((123 < self.note_y[ind] + 49 - 14 < 205 and i.up) or (
+                            123 < self.note_y[ind] + 14 < 205 and not i.up)))
+                    if not ((123 < self.note_y[ind] + 49 - 14 < 205 and i.up) or (
+                            123 < self.note_y[ind] + 14 < 205 and not i.up)):
+                        if i.up:
+                            self.note_line[ind] = Line(self.screen, (self.note_x[ind] - 4, self.note_y[ind] + 49 - 4),
+                                                       (self.note_x[ind] + line_size + 4, self.note_y[ind] + 49 - 4))
+                        else:
+                            self.note_line[ind] = Line(self.screen, (self.note_x[ind] - 4, self.note_y[ind] + 11),
+                                                       (self.note_x[ind] + line_size + 4, self.note_y[ind] + 11))
+                        ind += 1
         max_y, min_y = 0, 1000
         max_y_ind, min_y_ind = 0, 0
         tn = 5
@@ -933,11 +946,12 @@ class Melodie(Window):
                         if start_y < stop_y:
                             need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
                     if fl:
-                        self.union_lines.append((cnt, Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
-                                                     (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2)))
+                        self.union_lines.append(
+                            (cnt, Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
+                                       (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2)))
                     else:
                         self.union_lines.append((cnt, Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
-                                                     (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2)))
+                                                           (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2)))
 
         if fl:
             self.none_tact_lines.append(
@@ -988,8 +1002,8 @@ class Melodie(Window):
                                 'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if cnt == len(self.body):
-                    if not ((128 <= y + i.size[1] - 14 <= 212 and i.up) or (
-                            128 <= y + 14 <= 212 and not i.up)):
+                    if not ((123 <= y + i.size[1] - 14 <= 205 and i.up) or (
+                            123 <= y + 14 <= 205 and not i.up)):
                         self.note_line.pop()
                     i.kill()
             else:
@@ -1028,8 +1042,8 @@ class Melodie(Window):
                     if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                         cnt += 1
                         if cnt == len(self.body):
-                            if not ((128 <= y + i.size[1] - 14 <= 212 and i.up) or (
-                                    128 <= y + 14 <= 212 and not i.up)):
+                            if not ((123 <= y + i.size[1] - 14 <= 205 and i.up) or (
+                                    123 <= y + 14 <= 205 and not i.up)):
                                 self.note_line.pop()
                             i.kill()
                     else:
