@@ -438,8 +438,8 @@ class Melodie(Window):
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
-                if not ((123 <= self.note_y[-1] + size[1] - 14 <= 205 and n.up) or (
-                        123 <= self.note_y[-1] + 14 <= 205 and not n.up)):
+                if not ((123 < self.note_y[-1] + size[1] - 14 < 205 and n.up) or (
+                        123 < self.note_y[-1] + 14 < 205 and not n.up)):
                     if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
@@ -687,7 +687,6 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    # print(self.note_y[-1] + size[1] - 14)
                     if not ((123 < self.note_y[-1] + size[1] - 14 < 205 and n.up) or (
                             123 < self.note_y[-1] + 14 < 205 and not n.up)):
                         if n.up:
@@ -844,7 +843,6 @@ class Melodie(Window):
             st *= 2
         st //= 2
         l = second
-        print(st, self.none_tact_lines)
         while l <= cur and st > 1:
             l += st
             self.none_tact_lines.pop()
@@ -1021,7 +1019,10 @@ class Melodie(Window):
                     i.kill()
         if not self.body:
             self.body = [[]]
-            self.first_note.pop()
+            self.first_note = []
+            self.note_line = []
+            self.union_lines = []
+            self.none_tact_lines = []
             return
         last_note = ''
         octave = 0
