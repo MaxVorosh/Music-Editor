@@ -14,6 +14,7 @@ class Note(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.image_name = image
+        self.start_name = image
         self.down = down
         self.size = size
         self.start_up = self.up
