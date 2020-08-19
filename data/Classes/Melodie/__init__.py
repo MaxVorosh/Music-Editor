@@ -441,8 +441,8 @@ class Melodie(Window):
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
-                if not ((123 < self.note_y[-1] + size[1] - 14 < 205 and n.up) or (
-                        123 < self.note_y[-1] + 14 < 205 and not n.up)):
+                if not ((123 < self.note_y[-1] + size[1] - 14 < 200 and n.up) or (
+                        123 < self.note_y[-1] + 14 < 200 and not n.up)):
                     if n.up:
                         self.note_line.append(
                             Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
@@ -690,8 +690,8 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    if not ((123 < self.note_y[-1] + size[1] - 14 < 205 and n.up) or (
-                            123 < self.note_y[-1] + 14 < 205 and not n.up)):
+                    if not ((123 < self.note_y[-1] + size[1] - 14 < 200 and n.up) or (
+                            123 < self.note_y[-1] + 14 < 200 and not n.up)):
                         if n.up:
                             self.note_line.append(
                                 Line(self.screen, (self.note_x[-1] - 4, self.note_y[-1] + size[1] - 4),
@@ -841,12 +841,14 @@ class Melodie(Window):
                 self.pre_union_notes(second, cur, fl)
 
     def delete_lines(self, second, cur, fl):
+        #TODO Пофиксить всю функцию
         st = 1
-        while st <= cur - second + 1:
+        while st <= cur - second:
             st *= 2
         st //= 2
         l = second
         while l <= cur and st > 1:
+            print(l, cur, st)
             l += st
             self.none_tact_lines.pop()
             if not fl:
@@ -897,8 +899,8 @@ class Melodie(Window):
                     i.change_image('quater', (15, 49))
                     self.note_y[cnt] = i.rect.y
                     line_size = 15
-                    if not ((123 < self.note_y[ind] + 49 - 14 < 205 and i.up) or (
-                            123 < self.note_y[ind] + 14 < 205 and not i.up)):
+                    if not ((123 < self.note_y[ind] + 49 - 14 < 200 and i.up) or (
+                            123 < self.note_y[ind] + 14 < 200 and not i.up)):
                         if i.up:
                             self.note_line[ind] = Line(self.screen, (self.note_x[ind] - 4, self.note_y[ind] + 49 - 4),
                                                        (self.note_x[ind] + line_size + 4, self.note_y[ind] + 49 - 4))
@@ -975,39 +977,69 @@ class Melodie(Window):
             if i.image_name in ['quater', 'small', 'very_small']:
                 cnt += 1
                 if l <= cnt <= r:
-                    indicator = 1
+                    indicator = 1 if fl else -1
                     if not fl:
                         need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 49
-                        second_need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind] - 10) * tn + 49
+                        if cnt == r:
+                            second_need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind] - 10) * tn + 49
+                        else:
+                            second_need_y = max_y - (self.note_x[cnt] - self.note_x[max_y_ind] + 10) * tn + 49
                         if start_y < stop_y:
                             need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind]) * tn + 49
-                            second_need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind] - 10) * tn + 49
-                            indicator = -1
+                            if cnt == r:
+                                second_need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind] - 10) * tn + 49
+                            else:
+                                second_need_y = max_y + (self.note_x[cnt] - self.note_x[max_y_ind] + 10) * tn + 49
                     else:
                         need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                        second_need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind] - 10) * tn
+                        if cnt == r:
+                            second_need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind] - 10) * tn
+                        else:
+                            second_need_y = min_y + (self.note_x[cnt] - self.note_x[min_y_ind] + 10) * tn
                         if start_y < stop_y:
                             need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind]) * tn
-                            second_need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind] - 10) * tn
-                            indicator = -1
+                            if cnt == r:
+                                second_need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind] - 10) * tn
+                            else:
+                                second_need_y = min_y - (self.note_x[cnt] - self.note_x[min_y_ind] + 10) * tn
                     if i.start_name == 'small' and is_eight and with_point:
-                        if fl:
-                            self.dop_lines.append(
-                                (cnt, Line(self.screen, (self.note_x[cnt] + 6, second_need_y + 7 * indicator),
-                                           (self.note_x[cnt] + 13, need_y + 7 * indicator))))
+                        if cnt == r:
+                            if fl:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] + 3, second_need_y + 7 * indicator),
+                                               (self.note_x[cnt] + 13, need_y + 7 * indicator))))
+                            else:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] - 10, second_need_y + 7 * indicator),
+                                               (self.note_x[cnt], need_y + 7 * indicator))))
                         else:
-                            self.dop_lines.append(
-                                (cnt, Line(self.screen, (self.note_x[cnt] - 7, second_need_y + 7 * indicator),
-                                           (self.note_x[cnt], need_y + 7 * indicator))))
+                            if fl:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] + 13, need_y + 7 * indicator),
+                                               (self.note_x[cnt] + 23, second_need_y + 7 * indicator))))
+                            else:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt], need_y + 7 * indicator),
+                                               (self.note_x[cnt] + 10, second_need_y + 7 * indicator))))
                     elif i.start_name == 'very_small' and with_point:
-                        if fl:
-                            self.dop_lines.append(
-                                (cnt, Line(self.screen, (self.note_x[cnt] + 6, second_need_y + 14 * indicator),
-                                           (self.note_x[cnt] + 13, need_y + 14 * indicator))))
+                        if cnt == r:
+                            if fl:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] + 3, second_need_y + 14 * indicator),
+                                               (self.note_x[cnt] + 13, need_y + 14 * indicator))))
+                            else:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] - 10, second_need_y + 14 * indicator),
+                                               (self.note_x[cnt], need_y + 14 * indicator))))
                         else:
-                            self.dop_lines.append(
-                                (cnt, Line(self.screen, (self.note_x[cnt] - 7, second_need_y + 14 * indicator),
-                                           (self.note_x[cnt], need_y + 14 * indicator))))
+                            if fl:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt] + 13, need_y + 14 * indicator),
+                                               (self.note_x[cnt] + 23, second_need_y + 14 * indicator))))
+                            else:
+                                self.dop_lines.append(
+                                    (cnt, Line(self.screen, (self.note_x[cnt], need_y + 14 * indicator),
+                                               (self.note_x[cnt] + 10, second_need_y + 14 * indicator))))
         if fl:
             self.none_tact_lines.append(
                 Line(self.screen, (self.note_x[l] + 15, round(start_y)), (self.note_x[r] + 15, round(stop_y))))
@@ -1056,9 +1088,12 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
                                 'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
+                if cnt >= len(self.body) - self.first_note[-1][-2] + 1:
+                    self.dop_lines.pop()
+                    #TODO Проверить на работоспособность
                 if cnt == len(self.body):
-                    if not ((123 <= y + i.size[1] - 14 <= 205 and i.up) or (
-                            123 <= y + 14 <= 205 and not i.up)):
+                    if not ((123 < y + i.size[1] - 14 < 200 and i.up) or (
+                            123 < y + 14 < 200 and not i.up)):
                         self.note_line.pop()
                     i.kill()
             else:
