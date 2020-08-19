@@ -55,7 +55,7 @@ class SecondMenu(Window):
         self.melodies.append(add)
         self.delete_symb = Button(self, "data\\Sprites\\delete.png")
         self.delete_symb.resize(70, 75)
-        self.delete_symb.move(560, 560)
+        self.delete_symb.move(283, 10)
         self.delete_symb.set_func(self.delete_btn)
         self.write_text = False
         self.set_background('data\\Sprites\\bg.jpg')
@@ -118,6 +118,10 @@ class SecondMenu(Window):
             pygame.display.flip()
 
     def delete_melodie(self, id, i):
+        self.delete_symb = Button(self, "data\\Sprites\\delete.png")
+        self.delete_symb.resize(70, 75)
+        self.delete_symb.move(283, 10)
+        self.delete_symb.set_func(self.delete_btn)
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         cur.execute('DELETE FROM Melodies WHERE id = ' + str(id))
@@ -139,7 +143,7 @@ class SecondMenu(Window):
     def delete_btn(self):
         self.write_text = True
         self.change_btn_function(self.delete_melodie)
-
+        self.delete_symb.kill()
 
     def exitFunc(self):
         pygame.quit()

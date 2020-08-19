@@ -835,11 +835,23 @@ class Melodie(Window):
                 for i in range(fir, sec + 1):
                     self.union_lines.pop(fir)
             if ans != (0, 0) and second != cur:
-                if self.none_tact_lines:
-                    self.none_tact_lines.pop()
-                    if ans[1] == 1 / 16:
-                        self.none_tact_lines.pop()
+                self.delete_lines(second, cur - 1, fl)
                 self.pre_union_notes(second, cur, fl)
+
+    def delete_lines(self, second, cur, fl):
+        st = 1
+        while st <= cur - second + 1:
+            st *= 2
+        st //= 2
+        l = second
+        print(st, self.none_tact_lines)
+        while l <= cur and st > 1:
+            l += st
+            self.none_tact_lines.pop()
+            if not fl:
+                self.none_tact_lines.pop()
+            while st > cur - l + 1:
+                st //= 2
 
     def pre_union_notes(self, second, cur, fl):
         st = 1
@@ -850,7 +862,7 @@ class Melodie(Window):
         while l <= cur:
             self.union_notes(l, min(l + st - 1, cur), fl)
             l = l + st
-            while st > cur - second + 1:
+            while st > cur - l + 1:
                 st //= 2
 
     def union_notes(self, l, r, is_eight):
@@ -867,7 +879,7 @@ class Melodie(Window):
                     else:
                         down += 1
         cnt = -1
-        ind = l
+        ind = 0
         fl = up >= down
         for i in self.note_group:
             if i.image_name in ['quater', 'small', 'very_small']:
@@ -878,8 +890,6 @@ class Melodie(Window):
                     i.change_image('quater', (15, 49))
                     self.note_y[cnt] = i.rect.y
                     line_size = 15
-                    print(not ((123 < self.note_y[ind] + 49 - 14 < 205 and i.up) or (
-                            123 < self.note_y[ind] + 14 < 205 and not i.up)))
                     if not ((123 < self.note_y[ind] + 49 - 14 < 205 and i.up) or (
                             123 < self.note_y[ind] + 14 < 205 and not i.up)):
                         if i.up:
