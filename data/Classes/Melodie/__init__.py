@@ -792,7 +792,7 @@ class Melodie(Window):
             if self.weight + 1 / 2 ** i + 1 / 2 ** (i + 1) <= self.up / self.down:
                 ClickedNote(self, data[i], 100 + i * 75, 100 - sizes[i][1], 1 / 2 ** i, sizes[i])
 
-    def union_notes_if_it_can(self, all=False):
+    def union_notes_if_it_can(self, all=False, after_delete=False):
         if not self.note_y:
             return
         if all:
@@ -837,18 +837,21 @@ class Melodie(Window):
                 for i in range(fir, sec + 1):
                     self.union_lines.pop(fir)
             if ans != (0, 0) and second != cur:
-                self.delete_lines(second, cur - 1, fl)
+                if not after_delete:
+                    self.delete_lines(second, cur - 1, fl)
+                else:
+                    self.delete_lines(second, cur + 1, fl)
                 self.pre_union_notes(second, cur, fl)
 
     def delete_lines(self, second, cur, fl):
-        #TODO Пофиксить всю функцию
+        # TODO Пофиксить всю функцию
         st = 1
-        while st <= cur - second:
+        while st <= cur - second + 1:
             st *= 2
         st //= 2
         l = second
+        # print(l, cur, st, self.none_tact_lines)
         while l <= cur and st > 1:
-            print(l, cur, st)
             l += st
             self.none_tact_lines.pop()
             if not fl:
@@ -1088,9 +1091,10 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
                                 'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
-                if cnt >= len(self.body) - self.first_note[-1][-2] + 1:
+                if ((cnt >= len(self.body) - self.first_note[-1][-2] + 1)
+                        and (self.dop_lines and cnt <= self.dop_lines[-1][0])):
                     self.dop_lines.pop()
-                    #TODO Проверить на работоспособность
+                    # TODO Проверить на работоспособность
                 if cnt == len(self.body):
                     if not ((123 < y + i.size[1] - 14 < 200 and i.up) or (
                             123 < y + 14 < 200 and not i.up)):
@@ -1121,9 +1125,8 @@ class Melodie(Window):
                 or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
         else:
-            self.none_tact_lines.pop()
             self.first_note[-1][3] = self.first_note[-1][3] - 1
-            self.union_notes_if_it_can()
+            self.union_notes_if_it_can(after_delete=True)
             if self.first_note[-1][3] == 1:
                 self.body.pop()
                 self.first_note[-1][3] = self.first_note[-1][3] - 1
