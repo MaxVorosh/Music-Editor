@@ -161,8 +161,6 @@ class Melodie(Window):
             if self.down != 0:
                 make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
-            # if self.stage == 6:
-            #     self.clicked_note_group.draw(self.screen)
             for i in range(self.sharps):
                 self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False))
             for i in range(self.flats):
@@ -218,7 +216,6 @@ class Melodie(Window):
             self.becar = None
         self.stage = 6
         self.cur_notes = notes
-        # self.note_symb += [(i, self.oct) for i in self.cur_notes]
         self.oct = oct
 
     def GoToLast(self):
@@ -402,12 +399,12 @@ class Melodie(Window):
                 con.close()
                 if self.first_note and weight - self.have_point * weight / 2 <= 1 / 8:
                     if self.weight - weight - weight * self.have_point / 2 == 0 or weight != self.first_note[-1][1]:
-                        self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
+                        self.first_note.append([self.cur_notes, weight - self.have_point * weight / 2, False, 1, self.oct])
                     else:
                         self.first_note[-1][3] = self.first_note[-1][3] + 1
                         self.first_note[-1][2] = True
                 else:
-                    self.first_note.append([self.cur_notes, weight, False, 1, self.oct])
+                    self.first_note.append([self.cur_notes, weight - self.have_point * weight / 2, False, 1, self.oct])
                 add = -20
                 if weight == 1:
                     name = 'full'
@@ -602,17 +599,16 @@ class Melodie(Window):
                 cur = con.cursor()
                 note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[i])).fetchall()[0]
                 add = -20
-                # self.note_symb.append((note[1], note[2]))
                 cur_notes += (note[1])
                 if i == len(step) - 1:
-                    if self.first_note and note[3] - note[3] * note[4] < 1 / 8:
+                    if self.first_note and note[3] - note[3] * note[4] / 2 < 1 / 8:
                         if self.first_note[-1][1] != note[3] or self.weight == 0 or cur_notes[0] == 'P':
-                            self.first_note.append([cur_notes, note[3], False, 1, note[2]])
+                            self.first_note.append([cur_notes, note[3] - note[3] * note[4] / 2, False, 1, note[2]])
                         else:
                             self.first_note[-1][3] = self.first_note[-1][3] + 1
                             self.first_note[-1][2] = True
                     else:
-                        self.first_note.append([cur_notes, note[3], False, 1, note[2]])
+                        self.first_note.append([cur_notes, note[3] - note[3] * note[4] / 2, False, 1, note[2]])
                 self.weight += note[3] + note[3] / 2 * note[4]
                 if self.weight == self.up / self.down:
                     self.weight = 0
@@ -949,8 +945,6 @@ class Melodie(Window):
         else:
             start_y = min_y + (self.note_x[min_y_ind] - self.note_x[l]) * tn
             stop_y = min_y - (self.note_x[r] - self.note_x[min_y_ind]) * tn
-            # if second_min_y_ind > min_y_ind:
-            #     start_y, stop_y = stop_y, start_y
             if second_ind < min_y_ind:
                 start_y = min_y - (self.note_x[min_y_ind] - self.note_x[l]) * tn
                 stop_y = min_y + (self.note_x[r] - self.note_x[min_y_ind]) * tn
@@ -1094,14 +1088,13 @@ class Melodie(Window):
                 if ((cnt >= len(self.body) - self.first_note[-1][-2] + 1)
                         and (self.dop_lines and cnt <= self.dop_lines[-1][0])):
                     self.dop_lines.pop()
-                    # TODO Проверить на работоспособность
                 if cnt == len(self.body):
                     if not ((123 < y + i.size[1] - 14 < 200 and i.up) or (
                             123 < y + 14 < 200 and not i.up)):
                         self.note_line.pop()
                     i.kill()
             else:
-                if cnt >= len(self.body) - 1:
+                if cnt >= len(self.body) - 1 and i.image_name != 'point':
                     i.kill()
                 if cnt > len(self.body) - 1 and i.image_name == 'point':
                     self.points -= 1
@@ -1113,21 +1106,24 @@ class Melodie(Window):
             self.none_tact_lines = []
             return
         last_note = ''
+        w = 0
         octave = 0
         for i in self.body[-1]:
-            rez = cur.execute("SELECT Note, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
+            rez = cur.execute("SELECT Note, Weight, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
             last_note += rez[0]
-            octave = rez[1]
+            w += rez[1]
+            octave = rez[2]
         if self.first_note[-1][2]:
             if self.union_lines[-1][0] == len(self.note_y):
                 self.union_lines.pop()
-        if ((last_note != self.first_note[-1][0] or octave != self.first_note[-1][-1])
+        print(self.first_note, last_note, octave, self.weight)
+        if ((w != self.first_note[-1][1] or octave != self.first_note[-1][-1])
                 or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
         else:
             self.first_note[-1][3] = self.first_note[-1][3] - 1
             self.union_notes_if_it_can(after_delete=True)
-            if self.first_note[-1][3] == 1:
+            if self.first_note[-1][3] % 2 == 1:
                 self.body.pop()
                 self.first_note[-1][3] = self.first_note[-1][3] - 1
                 self.first_note[-1][2] = False
@@ -1146,9 +1142,9 @@ class Melodie(Window):
                             i.kill()
 
                     else:
-                        if cnt >= len(self.body) - 1:
+                        if cnt >= len(self.body) - 1 and i.image_name != 'point':
                             i.kill()
-                        if cnt == len(self.body) - 1:
+                        if cnt > len(self.body) - 1 and i.image_name == 'point':
                             self.points -= 1
                 if not self.body:
                     self.body = [[]]
