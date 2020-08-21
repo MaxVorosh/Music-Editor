@@ -835,9 +835,9 @@ class Melodie(Window):
             if ans != (0, 0) and second != cur:
                 if not after_delete:
                     self.delete_lines(second, cur - 1, fl)
-                else:
-                    self.delete_lines(second, cur + 1, fl)
                 self.pre_union_notes(second, cur, fl)
+            if after_delete:
+                self.delete_lines(second, cur + 1, fl)
 
     def delete_lines(self, second, cur, fl):
         st = 1
@@ -845,7 +845,6 @@ class Melodie(Window):
             st *= 2
         st //= 2
         l = second
-        # print(l, cur, st, self.none_tact_lines)
         while l <= cur and st > 1:
             l += st
             self.none_tact_lines.pop()
@@ -853,7 +852,6 @@ class Melodie(Window):
                 self.none_tact_lines.pop()
             while st > cur - l + 1:
                 st //= 2
-        cnt = -1
         while self.dop_lines and second <= self.dop_lines[-1][0] <= cur:
             self.dop_lines.pop()
 
@@ -1100,6 +1098,7 @@ class Melodie(Window):
                     i.kill()
                 if cnt > len(self.body) - 1 and i.image_name == 'point':
                     self.points -= 1
+                    i.kill()
         if not self.body:
             self.body = [[]]
             self.first_note = []
@@ -1118,7 +1117,6 @@ class Melodie(Window):
         if self.first_note[-1][2]:
             if self.union_lines[-1][0] == len(self.note_y):
                 self.union_lines.pop()
-        # print(self.first_note, last_note, octave, self.weight, w)
         if ((w != self.first_note[-1][1] or octave != self.first_note[-1][-1])
                 or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
@@ -1148,9 +1146,11 @@ class Melodie(Window):
                             i.kill()
                         if cnt > len(self.body) - 1 and i.image_name == 'point':
                             self.points -= 1
+                            i.kill()
                 if not self.body:
                     self.body = [[]]
                 self.cur_notes = [last_note]
                 self.oct = octave
-                self.draw_note(self.first_note[-1][1])
+                self.have_point = rez[3]
+                self.draw_note(self.first_note[-1][1] + self.first_note[-1][1] * self.have_point)
         con.close()
