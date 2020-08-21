@@ -840,7 +840,6 @@ class Melodie(Window):
                 self.pre_union_notes(second, cur, fl)
 
     def delete_lines(self, second, cur, fl):
-        # TODO Пофиксить всю функцию
         st = 1
         while st <= cur - second + 1:
             st *= 2
@@ -854,6 +853,9 @@ class Melodie(Window):
                 self.none_tact_lines.pop()
             while st > cur - l + 1:
                 st //= 2
+        cnt = -1
+        while self.dop_lines and second <= self.dop_lines[-1][0] <= cur:
+            self.dop_lines.pop()
 
     def pre_union_notes(self, second, cur, fl):
         st = 1
@@ -1109,14 +1111,14 @@ class Melodie(Window):
         w = 0
         octave = 0
         for i in self.body[-1]:
-            rez = cur.execute("SELECT Note, Weight, Octave FROM Notes WHERE id = " + str(i)).fetchall()[0]
+            rez = cur.execute("SELECT Note, Weight, Octave, Point FROM Notes WHERE id = " + str(i)).fetchall()[0]
             last_note += rez[0]
-            w += rez[1]
+            w += rez[1] - rez[1] * rez[3] / 2
             octave = rez[2]
         if self.first_note[-1][2]:
             if self.union_lines[-1][0] == len(self.note_y):
                 self.union_lines.pop()
-        print(self.first_note, last_note, octave, self.weight)
+        # print(self.first_note, last_note, octave, self.weight, w)
         if ((w != self.first_note[-1][1] or octave != self.first_note[-1][-1])
                 or self.weight == 0 or last_note == 'P'):
             self.first_note.pop()
