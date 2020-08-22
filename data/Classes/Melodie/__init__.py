@@ -441,7 +441,7 @@ class Melodie(Window):
                 if n.up:
                     self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size)
                 else:
-                    self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 11, line_size)
+                    self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size)
         if self.body[0]:
             self.body.append(data)
         else:
@@ -595,7 +595,7 @@ class Melodie(Window):
                 add = -20
                 cur_notes += (note[1])
                 if i == len(step) - 1:
-                    if self.first_note and note[3] - note[3] * note[4] / 2 < 1 / 8:
+                    if self.first_note and note[3] - note[3] * note[4] / 2 <= 1 / 8:
                         if self.first_note[-1][1] != note[3] or self.weight == 0 or cur_notes[0] == 'P':
                             self.first_note.append([cur_notes, note[3] - note[3] * note[4] / 2, False, 1, note[2]])
                         else:
@@ -683,7 +683,7 @@ class Melodie(Window):
                     if n.up:
                         self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size)
                     else:
-                        self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 11, line_size)
+                        self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size)
                 if note[4]:
                     self.note_group.add(Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
@@ -815,7 +815,7 @@ class Melodie(Window):
                 elif i == max(start - 1, -1) + 1:
                     second = i
                 w += ans[1]
-            if cur - second > 1:
+            if cur - second >= 1:
                 fir = bin_low([i[0] for i in self.union_lines], second - 1) + 1
                 sec = bin_low([i[0] for i in self.union_lines], cur)
                 for i in range(fir, sec + 1):
@@ -873,8 +873,6 @@ class Melodie(Window):
                         with_point = True
                     elif i.start_name == 'small' and not is_eight:
                         with_point = True
-                    self.delete_lines_under_note(cnt)
-
         cnt = -1
         fl = up >= down
         for i in self.note_group:
@@ -885,10 +883,6 @@ class Melodie(Window):
                         i.change_up()
                     i.change_image('quater', (15, 49))
                     self.note_y[cnt] = i.rect.y
-                    if i.up:
-                        self.draw_lines_under_note(self.note_x[cnt], self.note_y[cnt] + i.size[1] - 4, 15)
-                    else:
-                        self.draw_lines_under_note(self.note_x[cnt], self.note_y[cnt] + 11, 15)
         max_y, min_y = 0, 1000
         max_y_ind, min_y_ind = 0, 0
         tn = 5
@@ -1068,7 +1062,7 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
                                 'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
-                if ((cnt >= len(self.body) - self.first_note[-1][-2] + 1)
+                if ((cnt >= len(self.body) - self.first_note[-1][3] + 1)
                         and (self.dop_lines and cnt <= self.dop_lines[-1][0])):
                     self.dop_lines.pop()
                 if cnt == len(self.body):
@@ -1097,8 +1091,7 @@ class Melodie(Window):
         if self.first_note[-1][2]:
             if self.union_lines[-1][0] == len(self.note_y):
                 self.union_lines.pop()
-        if ((w != self.first_note[-1][1] or octave != self.first_note[-1][-1])
-                or self.weight == 0 or last_note == 'P'):
+        if w != self.first_note[-1][1] or self.weight == 0 or last_note == 'P':
             self.first_note.pop()
         else:
             self.first_note[-1][3] = self.first_note[-1][3] - 1
@@ -1109,7 +1102,7 @@ class Melodie(Window):
                 self.first_note[-1][2] = False
                 if self.union_lines[-1][0] == len(self.note_y):
                     self.union_lines.pop()
-                self.delete_lines_under_last_note()
+                self.delete_lines_under_note(-1)
                 self.note_x.pop()
                 self.note_y.pop()
                 cnt = -1
@@ -1133,19 +1126,17 @@ class Melodie(Window):
         con.close()
 
     def draw_lines_under_note(self, note_x, note_y, x_size):
-        #TODO Подкрутить значения
-        for i in range(note_y, 124, 7):
+        for i in range(note_y, 131, 7):
             self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i)))
-        for i in range(205, note_y + 1, 7):
+        for i in range(215, note_y + 1, 7):
             self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i)))
 
     def delete_lines_under_note(self, ind):
-        # TODO Подкрутить значения
         if not self.note_line:
             return
         note_x = self.note_x[ind]
         l = len(self.note_line) - 1
-        while l >= 0 and self.note_line and self.note_line[l].start[0] >= note_x - 4:
-            if self.note_lines[l].start[0] == note_x - 4:
+        while l >= 0 and self.note_line and  self.note_line[l].start[0] >= note_x - 4:
+            if self.note_line[l].start[0] == note_x - 4:
                 self.note_line.pop(l)
             l -= 1

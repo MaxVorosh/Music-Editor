@@ -1,5 +1,5 @@
 def bin_low(data, elem):
-    l = 0
+    l = -1
     r = len(data)
     while r - l > 1:
         m = (r + l) // 2

@@ -50,7 +50,8 @@ class Note(pygame.sprite.Sprite):
                     pygame.image.load("data\\Sprites\\" + self.image_name + "_down.png"), self.size)
             self.rect = self.image.get_rect()
             self.rect.x = x
+            self.rect.y = y - self.size[1]
             if self.up:
-                self.rect.y = y - self.size[1] + 7
+                self.rect.y = y - self.size[1] + 14
             else:
-                self.rect.y = y + self.size[1] - 7
+                self.rect.y = y + self.size[1] - 14
