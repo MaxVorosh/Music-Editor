@@ -133,17 +133,21 @@ class Melodie(Window):
                             line.do_down()
                         for note in self.note_group:
                             note.do_down()
+                        for note in self.stair:
+                            note.do_down()
                     if event.key == pygame.K_DOWN:
                         for line in self.none_tact_lines:
-                            line.do_down()
+                            line.do_up()
                         for line in self.note_line:
-                            line.do_down()
+                            line.do_up()
                         for numb, line in self.union_lines:
-                            line.do_down()
+                            line.do_up()
                         for numb, line in self.dop_lines:
-                            line.do_down()
+                            line.do_up()
                         for note in self.note_group:
-                            note.do_down()
+                            note.do_up()
+                        for note in self.stair:
+                            note.do_up()
                     if 3 <= self.stage <= 4:
                         chis = -1
                         if event.key == pygame.K_2:
