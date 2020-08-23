@@ -29,7 +29,8 @@ class Melodie(Window):
         self.up = melodie[6]
         self.down = melodie[7]
         self.stage = melodie[8]
-        self.line = melodie[9]
+        self.last_line = melodie[9]
+        self.line = 1
         self.symb = 0
         self.let = True
         self.weight = 0
@@ -121,6 +122,28 @@ class Melodie(Window):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DELETE:
                         self.delete_note()
+                    if event.key == pygame.K_UP:
+                        for line in self.none_tact_lines:
+                            line.do_down()
+                        for line in self.note_line:
+                            line.do_down()
+                        for numb, line in self.union_lines:
+                            line.do_down()
+                        for numb, line in self.dop_lines:
+                            line.do_down()
+                        for note in self.note_group:
+                            note.do_down()
+                    if event.key == pygame.K_DOWN:
+                        for line in self.none_tact_lines:
+                            line.do_down()
+                        for line in self.note_line:
+                            line.do_down()
+                        for numb, line in self.union_lines:
+                            line.do_down()
+                        for numb, line in self.dop_lines:
+                            line.do_down()
+                        for note in self.note_group:
+                            note.do_down()
                     if 3 <= self.stage <= 4:
                         chis = -1
                         if event.key == pygame.K_2:
@@ -162,9 +185,9 @@ class Melodie(Window):
                 make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                  80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
             for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False))
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1))
             for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False))
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1))
             self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             self.clicked_note_group.draw(self.screen)
@@ -335,7 +358,7 @@ class Melodie(Window):
                     size = (28, 56)
                     y = 168
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
-                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False)
+                        len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False, self.line)
                 self.note_group.add(n)
                 self.note_y.append(n.rect.y)
                 self.note_x.append(n.rect.x)
@@ -378,7 +401,7 @@ class Melodie(Window):
                 self.note_group.add(
                     Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         y + add, size, False))
+                         y + add, size, False, self.line))
                 self.symb += 1
                 con.close()
             else:
@@ -399,7 +422,8 @@ class Melodie(Window):
                 con.close()
                 if self.first_note and weight - self.have_point * weight / 2 <= 1 / 8:
                     if self.weight - weight - weight * self.have_point / 2 == 0 or weight != self.first_note[-1][1]:
-                        self.first_note.append([self.cur_notes, weight - self.have_point * weight / 2, False, 1, self.oct])
+                        self.first_note.append(
+                            [self.cur_notes, weight - self.have_point * weight / 2, False, 1, self.oct])
                     else:
                         self.first_note[-1][3] = self.first_note[-1][3] + 1
                         self.first_note[-1][2] = True
@@ -429,12 +453,12 @@ class Melodie(Window):
                     line_size = 18
                 n = Note(name, 95 + self.points * 9 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True)
+                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True, self.line)
                 self.note_group.add(n)
                 if self.have_point:
                     self.note_group.add(Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False))
+                                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.line))
                     self.points += 1
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
@@ -450,7 +474,7 @@ class Melodie(Window):
         if self.weight == self.up / self.down:
             self.weight = 0
             self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
-                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142))
+                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142, self.line))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.have_point = False
         self.do_pause()
@@ -607,7 +631,7 @@ class Melodie(Window):
                 if self.weight == self.up / self.down:
                     self.weight = 0
                     self.lines.add(TactLine(self.points * 9 + 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142))
+                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, self.line))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
                 if note[1] == 'P':
@@ -675,7 +699,7 @@ class Melodie(Window):
                         y = self.up_note[note[2]][next_note[1]]
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         y + add, size, fl)
+                         y + add, size, fl, self.line)
                 self.note_group.add(n)
                 if fl:
                     self.note_y.append(n.rect.y)
@@ -687,7 +711,7 @@ class Melodie(Window):
                 if note[4]:
                     self.note_group.add(Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                                             self.up_note[note[2]][note[1]], (10, 10), False))
+                                             self.up_note[note[2]][note[1]], (10, 10), False, self.line))
                     self.points += 1
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
@@ -940,10 +964,11 @@ class Melodie(Window):
                     if fl:
                         self.union_lines.append(
                             (cnt, Line(self.screen, (self.note_x[cnt] + 13, min(need_y, i.rect.y - 5)),
-                                       (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), 2)))
+                                       (self.note_x[cnt] + 13, max(need_y, i.rect.y + i.size[1] - 5)), self.line, 2)))
                     else:
                         self.union_lines.append((cnt, Line(self.screen, (self.note_x[cnt], min(need_y, i.rect.y + 7)),
-                                                           (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])), 2)))
+                                                           (self.note_x[cnt], max(need_y, i.rect.y + i.size[1])),
+                                                           self.line, 2)))
 
         cnt = -1
         for i in self.note_group:
@@ -980,52 +1005,55 @@ class Melodie(Window):
                             if fl:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] + 3, second_need_y + 7 * indicator),
-                                               (self.note_x[cnt] + 13, need_y + 7 * indicator))))
+                                               (self.note_x[cnt] + 13, need_y + 7 * indicator), self.line)))
                             else:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] - 10, second_need_y + 7 * indicator),
-                                               (self.note_x[cnt], need_y + 7 * indicator))))
+                                               (self.note_x[cnt], need_y + 7 * indicator), self.line)))
                         else:
                             if fl:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] + 13, need_y + 7 * indicator),
-                                               (self.note_x[cnt] + 23, second_need_y + 7 * indicator))))
+                                               (self.note_x[cnt] + 23, second_need_y + 7 * indicator), self.line)))
                             else:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt], need_y + 7 * indicator),
-                                               (self.note_x[cnt] + 10, second_need_y + 7 * indicator))))
+                                               (self.note_x[cnt] + 10, second_need_y + 7 * indicator), self.line)))
                     elif i.start_name == 'very_small' and with_point:
                         if cnt == r:
                             if fl:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] + 3, second_need_y + 14 * indicator),
-                                               (self.note_x[cnt] + 13, need_y + 14 * indicator))))
+                                               (self.note_x[cnt] + 13, need_y + 14 * indicator), self.line)))
                             else:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] - 10, second_need_y + 14 * indicator),
-                                               (self.note_x[cnt], need_y + 14 * indicator))))
+                                               (self.note_x[cnt], need_y + 14 * indicator), self.line)))
                         else:
                             if fl:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt] + 13, need_y + 14 * indicator),
-                                               (self.note_x[cnt] + 23, second_need_y + 14 * indicator))))
+                                               (self.note_x[cnt] + 23, second_need_y + 14 * indicator), self.line)))
                             else:
                                 self.dop_lines.append(
                                     (cnt, Line(self.screen, (self.note_x[cnt], need_y + 14 * indicator),
-                                               (self.note_x[cnt] + 10, second_need_y + 14 * indicator))))
+                                               (self.note_x[cnt] + 10, second_need_y + 14 * indicator), self.line)))
         if fl:
             self.none_tact_lines.append(
-                Line(self.screen, (self.note_x[l] + 15, round(start_y)), (self.note_x[r] + 15, round(stop_y))))
+                Line(self.screen, (self.note_x[l] + 15, round(start_y)), (self.note_x[r] + 15, round(stop_y)),
+                     self.line))
             if not is_eight:
                 self.none_tact_lines.append(
                     Line(self.screen, (self.note_x[l] + 15, round(start_y) + 7),
-                         (self.note_x[r] + 15, round(stop_y) + 7)))
+                         (self.note_x[r] + 15, round(stop_y) + 7), self.line))
         else:
             self.none_tact_lines.append(
-                Line(self.screen, (self.note_x[l], round(start_y) + 49), (self.note_x[r], round(stop_y) + 49)))
+                Line(self.screen, (self.note_x[l], round(start_y) + 49), (self.note_x[r], round(stop_y) + 49),
+                     self.line))
             if not is_eight:
                 self.none_tact_lines.append(
-                    Line(self.screen, (self.note_x[l], round(start_y) + 42), (self.note_x[r], round(stop_y) + 42)))
+                    Line(self.screen, (self.note_x[l], round(start_y) + 42), (self.note_x[r], round(stop_y) + 42),
+                         self.line))
 
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
@@ -1127,16 +1155,16 @@ class Melodie(Window):
 
     def draw_lines_under_note(self, note_x, note_y, x_size):
         for i in range(note_y, 131, 7):
-            self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i)))
+            self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i), self.line))
         for i in range(215, note_y + 1, 7):
-            self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i)))
+            self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i), self.line))
 
     def delete_lines_under_note(self, ind):
         if not self.note_line:
             return
         note_x = self.note_x[ind]
         l = len(self.note_line) - 1
-        while l >= 0 and self.note_line and  self.note_line[l].start[0] >= note_x - 4:
+        while l >= 0 and self.note_line and self.note_line[l].start[0] >= note_x - 4:
             if self.note_line[l].start[0] == note_x - 4:
                 self.note_line.pop(l)
             l -= 1

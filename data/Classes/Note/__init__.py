@@ -1,9 +1,10 @@
 import pygame
 from data.Functions.load import load
+from data.Constants import MULTIPLIER
 
 
 class Note(pygame.sprite.Sprite):
-    def __init__(self, image, x, y, size, down):
+    def __init__(self, image, x, y, size, down, line):
         super().__init__()
         if y > 155 or not down:
             self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + image + ".png"), size)
@@ -16,6 +17,8 @@ class Note(pygame.sprite.Sprite):
         self.image_name = image
         self.start_name = image
         self.down = down
+        self.line = line
+        self.y = y
         self.size = size
         self.start_up = self.up
         if y > 155 or not down:
@@ -55,3 +58,17 @@ class Note(pygame.sprite.Sprite):
                 self.rect.y = y - self.size[1] + 14
             else:
                 self.rect.y = y + self.size[1] - 14
+
+    def do_up(self):
+        self.line -= 1
+        if self.line == 0:
+            self.rect.y = -100
+        elif self.line == 3:
+            self.rect.y = self.y + 3 * MULTIPLIER
+
+    def do_down(self):
+        self.line += 1
+        if self.line == 4:
+            self.rect.y = 650
+        elif self.line == 1:
+            self.rect.y = self.y
