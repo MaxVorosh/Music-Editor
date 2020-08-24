@@ -18,16 +18,17 @@ class Note(pygame.sprite.Sprite):
         self.start_name = image
         self.down = down
         self.line = line
-        self.y = y
         self.size = size
         self.start_up = self.up
         if x + size[0] >= 635:
             self.line += 1
             self.rect.x = x - 545
         if y > 155 or not down:
-            self.rect.y = y - size[1] // 2 + (self.line - 1) * MULTIPLIER
+            self.y = y - size[1] // 2
+            self.rect.y = self.y + (self.line - 1) * MULTIPLIER
         else:
-            self.rect.y = y + size[1] // 2 - 12 + (self.line - 1) * MULTIPLIER
+            self.y = y + size[1] // 2 - 12
+            self.rect.y = self.y + (self.line - 1) * MULTIPLIER
 
     def change_image(self, image, size):
         x, y = self.rect.x, self.rect.y
@@ -39,6 +40,7 @@ class Note(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         if self.up:
+            self.y = self.y - size[1] + self.size[1]
             self.rect.y = y - size[1] + self.size[1]
         else:
             self.rect.y = y
@@ -58,8 +60,10 @@ class Note(pygame.sprite.Sprite):
             self.rect.x = x
             self.rect.y = y - self.size[1]
             if self.up:
+                self.y = self.y - self.size[1] + 14
                 self.rect.y = y - self.size[1] + 14
             else:
+                self.y = self.y + self.size[1] - 14
                 self.rect.y = y + self.size[1] - 14
 
     def do_up(self):
@@ -67,11 +71,13 @@ class Note(pygame.sprite.Sprite):
         if self.line == 0:
             self.rect.y = -100
         elif self.line == 3:
-            self.rect.y = self.y + 3 * MULTIPLIER
+            self.rect.y = self.y + 2 * MULTIPLIER
+        elif 1 <= self.line <= 3:
+            self.rect.y = self.y + (self.line - 1) * MULTIPLIER
 
     def do_down(self):
         self.line += 1
         if self.line == 4:
             self.rect.y = 650
-        elif self.line == 1:
-            self.rect.y = self.y
+        elif 1 <= self.line <= 3:
+            self.rect.y = self.y + (self.line - 1) * MULTIPLIER

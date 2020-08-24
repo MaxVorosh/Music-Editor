@@ -138,8 +138,6 @@ class Melodie(Window):
                                 line.do_down()
                             for note in self.note_group:
                                 note.do_down()
-                            for note in self.stair:
-                                note.do_down()
                             self.update_note_y()
                     if event.key == pygame.K_UP or event.key == pygame.K_w:
                         if self.line != self.last_line:
@@ -155,8 +153,6 @@ class Melodie(Window):
                             for numb, line in self.dop_lines:
                                 line.do_up()
                             for note in self.note_group:
-                                note.do_up()
-                            for note in self.stair:
                                 note.do_up()
                             self.update_note_y()
                     if 3 <= self.stage <= 4:
@@ -194,6 +190,7 @@ class Melodie(Window):
                 make_fon_by_rect(self.screen, ['С помощью цифр на клавиатуре', 'выберите размер такта.',
                                                'Первое число пойдёт вниз, второе - вверх'], 140, 480, 0, 80, 'black')
             if self.line == 1:
+                self.stair.draw(self.screen)
                 if self.up != 0:
                     make_fon_by_rect(self.screen, [str(self.up)], 80 + (self.sharps + self.flats) * 15 + 5,
                                      80 + (self.sharps + self.flats) * 15 + 19, 130, 144, 'black', 56)
@@ -204,7 +201,6 @@ class Melodie(Window):
                 self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1))
             for i in range(self.flats):
                 self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1))
-            self.stair.draw(self.screen)
             self.sprites.draw(self.screen)
             self.clicked_note_group.draw(self.screen)
             self.note_group.draw(self.screen)
@@ -637,6 +633,7 @@ class Melodie(Window):
         self.do_pause()
 
     def draw_body(self):
+        line = 0
         for step in self.body:
             cur_notes = ''
             for i in range(len(step)):
@@ -659,7 +656,7 @@ class Melodie(Window):
                 if self.weight == self.up / self.down:
                     self.weight = 0
                     self.lines.add(TactLine(self.points * 9 + 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, self.last_line))
+                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, line))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
                 if note[1] == 'P':
@@ -728,6 +725,7 @@ class Melodie(Window):
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          y + add, size, fl, self.line)
+                line = max(line, n.line)
                 self.note_group.add(n)
                 if fl:
                     self.note_y.append(n.rect.y)
@@ -898,7 +896,8 @@ class Melodie(Window):
     def before_pre_union_notes(self, second, cur, fl):
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if second == cnt:
                     line = i.line
@@ -1198,7 +1197,7 @@ class Melodie(Window):
     def draw_lines_under_note(self, note_x, note_y, x_size, line):
         for i in range(note_y, 131 + (line - 1) * MULTIPLIER, 7):
             self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i), line))
-        for i in range(215 + (line - 1) * MULTIPLIER , note_y + 1, 7):
+        for i in range(215 + (line - 1) * MULTIPLIER, note_y + 1, 7):
             self.note_line.append(Line(self.screen, (note_x - 4, i), (note_x + x_size + 4, i), line))
 
     def delete_lines_under_note(self, ind):
