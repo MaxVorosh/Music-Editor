@@ -86,14 +86,14 @@ class SecondMenu(Window):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DELETE:
                         self.delete_btn()
-                    if event.key == pygame.K_UP and start != 0:
+                    if (event.key == pygame.K_UP or event.key == pygame.K_w) and start != 0:
                         start -= 2
                         for btn in self.melodies:
                             if btn.rect.y == -185:
                                 btn.rect.y = 100
                             else:
                                 btn.rect.y += 185
-                    if event.key == pygame.K_DOWN and start <= self.length - 6:
+                    if (event.key == pygame.K_DOWN or event.key == pygame.K_s) and start <= self.length - 6:
                         start += 2
                         for btn in self.melodies:
                             if btn.rect.y == 100:

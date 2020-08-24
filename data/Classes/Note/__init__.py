@@ -21,10 +21,13 @@ class Note(pygame.sprite.Sprite):
         self.y = y
         self.size = size
         self.start_up = self.up
+        if x + size[0] >= 635:
+            self.line += 1
+            self.rect.x = x - 545
         if y > 155 or not down:
-            self.rect.y = y - size[1] // 2
+            self.rect.y = y - size[1] // 2 + (self.line - 1) * MULTIPLIER
         else:
-            self.rect.y = y + size[1] // 2 - 12
+            self.rect.y = y + size[1] // 2 - 12 + (self.line - 1) * MULTIPLIER
 
     def change_image(self, image, size):
         x, y = self.rect.x, self.rect.y
