@@ -69,14 +69,7 @@ class Melodie(Window):
         self.last.move(560, 0)
         self.last.set_func(self.exitFunc)
         if self.stage == 0:
-            self.sharp = Button(self, 'data\\Sprites\\sharp.png')
-            self.sharp.resize(20, 40)
-            self.sharp.move(100, 20)
-            self.sharp.set_func(self.first_sharp)
-            self.flat = Button(self, 'data\\Sprites\\flat.png')
-            self.flat.resize(20, 40)
-            self.flat.move(500, 20)
-            self.flat.set_func(self.first_flat)
+            self.draw_sharp_and_flat_symb()
         else:
             self.get_stair()
         self.keys = [Key(self, self.is_violin, -10, 140), Key(self, self.is_violin, -10, 260),
@@ -122,7 +115,64 @@ class Melodie(Window):
                         self.click(event.pos)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_DELETE:
-                        self.delete_note()
+                        if self.stage == 5:
+                            if self.body[0]:
+                                self.delete_note()
+                            else:
+                                for i in self.clicked_note_group:
+                                    i.kill()
+                                self.stage = 4
+                                for i in self.notes.keys():
+                                    for j in self.notes[i]:
+                                        j.kill()
+                                self.up = 0
+                        elif self.stage == 4:
+                            self.stage = 3
+                            self.down = 0
+                        elif self.stage == 3:
+                            if self.sharps == 0 and self.flats == 0:
+                                self.stage = 0
+                                self.draw_sharp_and_flat_symb()
+                                self.accept.kill()
+                                self.reject.kill()
+                            elif self.sharps == 0:
+                                self.flats -= 1
+                                self.delete_last_stair()
+                                self.stage = 2
+                                self.get_stair()
+                            else:
+                                self.sharps -= 1
+                                self.delete_last_stair()
+                                self.stage = 1
+                                self.get_stair()
+                        elif self.stage == 2:
+                            if self.flats == 0:
+                                self.stage = 0
+                                self.draw_sharp_and_flat_symb()
+                                self.accept.kill()
+                                self.reject.kill()
+                            else:
+                                self.flats -= 1
+                                self.delete_last_stair()
+                                if self.flats == 0:
+                                    self.stage = 0
+                                    self.draw_sharp_and_flat_symb()
+                                    self.accept.kill()
+                                    self.reject.kill()
+                        elif self.stage == 1:
+                            if self.sharps == 0:
+                                self.stage = 0
+                                self.draw_sharp_and_flat_symb()
+                                self.accept.kill()
+                                self.reject.kill()
+                            else:
+                                self.sharps -= 1
+                                self.delete_last_stair()
+                                if self.sharps == 0:
+                                    self.stage = 0
+                                    self.draw_sharp_and_flat_symb()
+                                    self.accept.kill()
+                                    self.reject.kill()
                     if event.key == pygame.K_DOWN or event.key == pygame.K_s:
                         if self.line != 1:
                             self.line -= 1
@@ -189,10 +239,6 @@ class Melodie(Window):
             if 3 <= self.stage <= 4:
                 make_fon_by_rect(self.screen, ['С помощью цифр на клавиатуре', 'выберите размер такта.',
                                                'Первое число пойдёт вниз, второе - вверх'], 140, 480, 0, 80, 'black')
-            for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1, 1))
-            for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1, 1))
             if self.line == 1:
                 self.stair.draw(self.screen)
                 if self.up != 0:
@@ -262,13 +308,25 @@ class Melodie(Window):
         self.reject.kill()
         self.stage = 3
 
+    def draw_sharp_and_flat_symb(self):
+        self.sharp = Button(self, 'data\\Sprites\\sharp.png')
+        self.sharp.resize(20, 40)
+        self.sharp.move(100, 20)
+        self.sharp.set_func(self.first_sharp)
+        self.flat = Button(self, 'data\\Sprites\\flat.png')
+        self.flat.resize(20, 40)
+        self.flat.move(500, 20)
+        self.flat.set_func(self.first_flat)
+
     def add_symb(self):
         if self.stage == 1:
+            self.stair.add(Note('sharp', 80 + self.sharps * 15, self.sharp_on_stair[self.sharps], (10, 30), False, 1, 1))
             self.sharps += 1
             if self.sharps == 7:
                 self.next_stage()
                 self.stage = 4
         if self.stage == 2:
+            self.stair.add(Note('flat', 80 + self.flats * 15, self.flat_on_stair[self.flats] - 7, (10, 30), False, 1, 1))
             self.flats += 1
             if self.flats == 7:
                 self.next_stage()
@@ -1257,3 +1315,10 @@ class Melodie(Window):
                                 'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 self.note_y[cnt] = i.rect.y
+
+    def delete_last_stair(self):
+        cnt = -1
+        for i in self.stair:
+            cnt += 1
+            if cnt == len(self.stair) - 1:
+                i.kill()
