@@ -190,9 +190,9 @@ class Melodie(Window):
                 make_fon_by_rect(self.screen, ['С помощью цифр на клавиатуре', 'выберите размер такта.',
                                                'Первое число пойдёт вниз, второе - вверх'], 140, 480, 0, 80, 'black')
             for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1))
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1, 1))
             for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1))
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1, 1))
             if self.line == 1:
                 self.stair.draw(self.screen)
                 if self.up != 0:
@@ -371,12 +371,12 @@ class Melodie(Window):
                     y = 168
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False,
-                            self.last_line)
-                print(n.line)
-                print(n.rect.x)
-                print(self.points * 9 + 95 + (
-                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11)
-                self.last_line = max(self.last_line, n.line)
+                            self.last_line, self.line)
+                # print(self.last_line)
+                # print(n.line)
+                # print(n.rect.x)
+                # print(self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
+                #         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11)
                 self.note_group.add(n)
                 self.note_y.append(n.rect.y)
                 self.note_x.append(n.rect.x)
@@ -418,11 +418,11 @@ class Melodie(Window):
                 y = self.up_note[self.oct][next_note[1]]
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         y + add, size, False, self.last_line)
+                         y + add, size, False, self.last_line, self.line)
 
-                if n.line > self.last_line:
+                if n.line + self.line - 1 > self.last_line:
                     self.line_break()
-                self.last_line = max(self.last_line, n.line)
+                self.last_line = max(self.last_line, n.line + self.line - 1)
                 self.note_group.add(n)
                 self.symb += 1
                 con.close()
@@ -475,21 +475,21 @@ class Melodie(Window):
                     line_size = 18
                 n = Note(name, 95 + self.points * 9 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True, self.last_line)
+                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True, self.last_line, self.line)
                 self.note_group.add(n)
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
                 if self.have_point:
                     p = Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.last_line)
+                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.last_line, self.line)
                     self.note_group.add(p)
                     self.points += 1
-                    if p.line > self.last_line:
+                    if p.line + self.line - 1 > self.last_line:
                         self.line_break()
-                if n.line > self.last_line:
+                if n.line + self.line - 1 > self.last_line:
                     self.line_break()
-                self.last_line = max(self.last_line, n.line)
+                self.last_line = max(self.last_line, n.line + self.line - 1)
                 if n.up:
                     self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size, n.line)
                 else:
@@ -502,7 +502,7 @@ class Melodie(Window):
         if self.weight == self.up / self.down:
             self.weight = 0
             self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
-                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142, self.last_line))
+                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142, self.last_line + self.line - 1))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.have_point = False
         self.do_pause()
@@ -637,7 +637,7 @@ class Melodie(Window):
         self.do_pause()
 
     def draw_body(self):
-        line = 0
+        line = 1
         for step in self.body:
             cur_notes = ''
             for i in range(len(step)):
@@ -733,7 +733,7 @@ class Melodie(Window):
                         y = self.up_note[note[2]][next_note[1]]
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         y + add, size, fl, self.line)
+                         y + add, size, fl, line, 1)
                 line = max(line, n.line)
                 self.note_group.add(n)
                 if fl:
@@ -748,7 +748,7 @@ class Melodie(Window):
                 if note[4]:
                     self.note_group.add(Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                                             self.up_note[note[2]][note[1]], (10, 10), False, self.line))
+                                             self.up_note[note[2]][note[1]], (10, 10), False, line, 1))
                     self.points += 1
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
@@ -1196,7 +1196,7 @@ class Melodie(Window):
                                 'half_pause', 'small_pause', 'very_small_pause']:
                         cnt += 1
                         if cnt == len(self.body):
-                            self.last_line = i.line
+                            self.last_line = i.line + self.line - 1
                             i.kill()
                     else:
                         if cnt >= len(self.body) - 1 and i.image_name != 'point':
