@@ -13,22 +13,24 @@ class Note(pygame.sprite.Sprite):
             self.image = pygame.transform.scale(pygame.image.load("data\\Sprites\\" + image + "_down.png"), size)
             self.up = False
         self.rect = self.image.get_rect()
-        self.rect.x = x
+        self.rect.x = x - (line - 1) * 545
         self.image_name = image
         self.start_name = image
         self.down = down
         self.line = line
         self.size = size
         self.start_up = self.up
-        if x + size[0] >= 635:
+        if self.rect.x + size[0] >= 635:
             self.line += 1
-            self.rect.x = x - 545
+            self.rect.x = self.rect.x - 545
         if y > 155 or not down:
             self.y = y - size[1] // 2
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
         else:
             self.y = y + size[1] // 2 - 12
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
+        if self.line >= 4:
+            self.rect.y = 650
 
     def change_image(self, image, size):
         x, y = self.rect.x, self.rect.y

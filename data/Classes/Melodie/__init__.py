@@ -189,6 +189,10 @@ class Melodie(Window):
             if 3 <= self.stage <= 4:
                 make_fon_by_rect(self.screen, ['С помощью цифр на клавиатуре', 'выберите размер такта.',
                                                'Первое число пойдёт вниз, второе - вверх'], 140, 480, 0, 80, 'black')
+            for i in range(self.sharps):
+                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1))
+            for i in range(self.flats):
+                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1))
             if self.line == 1:
                 self.stair.draw(self.screen)
                 if self.up != 0:
@@ -197,10 +201,6 @@ class Melodie(Window):
                 if self.down != 0:
                     make_fon_by_rect(self.screen, [str(self.down)], 80 + (self.sharps + self.flats) * 15 + 5,
                                      80 + (self.sharps + self.flats) * 15 + 19, 162, 176, 'black', 56)
-            for i in range(self.sharps):
-                self.stair.add(Note('sharp', 80 + i * 15, self.sharp_on_stair[i], (10, 30), False, 1))
-            for i in range(self.flats):
-                self.stair.add(Note('flat', 80 + i * 15, self.flat_on_stair[i] - 7, (10, 30), False, 1))
             self.sprites.draw(self.screen)
             self.clicked_note_group.draw(self.screen)
             self.note_group.draw(self.screen)
@@ -371,7 +371,11 @@ class Melodie(Window):
                     y = 168
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False,
-                         self.line)
+                            self.last_line)
+                print(n.line)
+                print(n.rect.x)
+                print(self.points * 9 + 95 + (
+                            len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11)
                 self.last_line = max(self.last_line, n.line)
                 self.note_group.add(n)
                 self.note_y.append(n.rect.y)
@@ -414,7 +418,7 @@ class Melodie(Window):
                 y = self.up_note[self.oct][next_note[1]]
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         y + add, size, False, self.line)
+                         y + add, size, False, self.last_line)
 
                 if n.line > self.last_line:
                     self.line_break()
@@ -471,14 +475,14 @@ class Melodie(Window):
                     line_size = 18
                 n = Note(name, 95 + self.points * 9 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
-                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True, self.line)
+                         self.up_note[self.oct][self.cur_notes[note]] + add, size, True, self.last_line)
                 self.note_group.add(n)
                 self.note_x.append(n.rect.x)
                 self.note_y.append(n.rect.y)
                 if self.have_point:
                     p = Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.line)
+                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.last_line)
                     self.note_group.add(p)
                     self.points += 1
                     if p.line > self.last_line:
@@ -1192,6 +1196,7 @@ class Melodie(Window):
                                 'half_pause', 'small_pause', 'very_small_pause']:
                         cnt += 1
                         if cnt == len(self.body):
+                            self.last_line = i.line
                             i.kill()
                     else:
                         if cnt >= len(self.body) - 1 and i.image_name != 'point':
@@ -1243,6 +1248,7 @@ class Melodie(Window):
     def update_note_y(self):
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 self.note_y[cnt] = i.rect.y
