@@ -478,7 +478,7 @@ class Melodie(Window):
                 if self.have_point:
                     p = Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
-                                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.line)
+                             self.up_note[self.oct][self.cur_notes[note]], (10, 10), False, self.line)
                     self.note_group.add(p)
                     self.points += 1
                     if p.line > self.last_line:
@@ -566,7 +566,7 @@ class Melodie(Window):
             A_.move(140 + i * 154, 510)
             A_.set_func(self.sharp_or_flat, 'AB', i + 1)
             self.notes['A#'].append(A_)
-            self.do_pause()
+        self.do_pause()
 
     def do_keyboard_bass(self):
         C = Button(self, 'data\\Sprites\\C.png')
@@ -659,8 +659,10 @@ class Melodie(Window):
                             len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, line))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
+                need_line = True
                 if note[1] == 'P':
                     fl = True
+                    need_line = False
                     add = 0
                     if note[3] == 1:
                         name = 'full_pause'
@@ -713,12 +715,15 @@ class Melodie(Window):
                         if note[1] == '#':
                             name = 'sharp'
                             add = 0
+                            need_line = False
                         elif note[1] == 'b':
                             name = 'flat'
                             add = -7
+                            need_line = False
                         elif note[1] == '|':
                             name = 'becar'
                             add = 0
+                            need_line = False
                         size = (10, 30)
                         next_note = cur.execute('SELECT * FROM Notes WHERE id = ' + str(step[-1])).fetchall()[0]
                         y = self.up_note[note[2]][next_note[1]]
@@ -730,10 +735,12 @@ class Melodie(Window):
                 if fl:
                     self.note_y.append(n.rect.y)
                     self.note_x.append(n.rect.x)
-                    if n.up:
-                        self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size, n.line)
-                    else:
-                        self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size, n.line)
+                    if need_line:
+                        if n.up:
+                            self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size,
+                                                       n.line)
+                        else:
+                            self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size, n.line)
                 if note[4]:
                     self.note_group.add(Note('point', self.points * 9 + 95 + (self.sharps + self.flats) * 20 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
@@ -927,7 +934,8 @@ class Melodie(Window):
         up, down = 0, 0
         with_point = False
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if l <= cnt <= r:
                     if i.start_up:
@@ -941,7 +949,8 @@ class Melodie(Window):
         cnt = -1
         fl = up >= down
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if l <= cnt <= r:
                     if fl ^ i.up:
@@ -991,7 +1000,8 @@ class Melodie(Window):
                 stop_y = min_y + (self.note_x[r] - self.note_x[min_y_ind]) * tn
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if l <= cnt <= r:
                     if not fl:
@@ -1013,7 +1023,8 @@ class Melodie(Window):
 
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['quater', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if l <= cnt <= r:
                     indicator = 1 if fl else -1
@@ -1099,10 +1110,11 @@ class Melodie(Window):
     def check_union(self, sample_id, current_id):
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
-        sample_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
-        current_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
+        sample_note = cur.execute("SELECT Weight, Point, Note FROM Notes WHERE id = " + str(sample_id)).fetchall()[0]
+        current_note = cur.execute("SELECT Weight, Point, Note FROM Notes WHERE id = " + str(current_id)).fetchall()[0]
         con.close()
-        return ((sample_note[0] - sample_note[0] / 2 * sample_note[1] == current_note[0] - current_note[0] / 2 *
+        return ((sample_note[2] != 'P' and current_note[2] != 'P' and
+                 sample_note[0] - sample_note[0] / 2 * sample_note[1] == current_note[0] - current_note[0] / 2 *
                  current_note[1]) and not (sample_note[1] and current_note[1]),
                 current_note[0] - current_note[0] / 2 * current_note[1])
 
@@ -1176,7 +1188,8 @@ class Melodie(Window):
                 self.note_y.pop()
                 cnt = -1
                 for i in self.note_group:
-                    if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+                    if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                         cnt += 1
                         if cnt == len(self.body):
                             i.kill()
@@ -1213,7 +1226,8 @@ class Melodie(Window):
     def line_break(self):
         cnt = -1
         for i in self.note_group:
-            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
+            if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
+                                'half_pause', 'small_pause', 'very_small_pause']:
                 cnt += 1
                 if cnt == len(self.body) + 1:
                     i.line = i.line + 1
@@ -1232,4 +1246,3 @@ class Melodie(Window):
             if i.image_name in ['full', 'quater', 'half', 'small', 'very_small']:
                 cnt += 1
                 self.note_y[cnt] = i.rect.y
-
