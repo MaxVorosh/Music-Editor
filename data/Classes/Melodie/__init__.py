@@ -371,13 +371,14 @@ class Melodie(Window):
                     y = 168
                 n = Note(name, self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11, y, size, False,
-                            self.last_line, self.line)
+                         self.last_line, self.line)
                 # print(self.last_line)
                 # print(n.line)
                 # print(n.rect.x)
                 # print(self.points * 9 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                 #         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11)
                 self.note_group.add(n)
+                self.last_line = max(self.last_line, n.line + self.line - 1)
                 self.note_y.append(n.rect.y)
                 self.note_x.append(n.rect.x)
                 self.first_note.append(['P', weight, False, 1, 0])
@@ -502,7 +503,8 @@ class Melodie(Window):
         if self.weight == self.up / self.down:
             self.weight = 0
             self.lines.add(TactLine(85 + (self.sharps + self.flats) * 15 + 60 + (
-                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142, self.last_line + self.line - 1))
+                    len(self.note_group) - self.symb - 1 - self.points) * 38 + self.symb * 11 - 3, 142, self.last_line,
+                                    self.line))
             self.becars = {'A': False, 'B': False, 'C': False, 'D': False, 'E': False, 'F': False, 'G': False}
         self.have_point = False
         self.do_pause()
@@ -660,7 +662,7 @@ class Melodie(Window):
                 if self.weight == self.up / self.down:
                     self.weight = 0
                     self.lines.add(TactLine(self.points * 9 + 85 + (self.sharps + self.flats) * 15 + 60 + (
-                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, line))
+                            len(self.note_group) - self.symb - self.points) * 38 + self.symb * 11 - 3, 142, line, 1))
                 if note[1] != '#' and note[1] != 'b' and note[1] != '|' and note[1] != 'P':
                     y = self.up_note[note[2]][note[1]]
                 need_line = True
@@ -1125,6 +1127,8 @@ class Melodie(Window):
     def delete_note(self):
         if not self.body[0]:
             return
+        for i in self.clicked_note_group:
+            i.kill()
         con = sqlite3.connect('data\\db\\Melodies.db')
         cur = con.cursor()
         delete_note = cur.execute("SELECT Weight, Point FROM Notes WHERE id = " + str(self.body[-1][-1])).fetchall()[0]
@@ -1193,7 +1197,7 @@ class Melodie(Window):
                 cnt = -1
                 for i in self.note_group:
                     if i.image_name in ['full', 'quater', 'half', 'small', 'very_small', 'full_pause', 'quater_pause',
-                                'half_pause', 'small_pause', 'very_small_pause']:
+                                        'half_pause', 'small_pause', 'very_small_pause']:
                         cnt += 1
                         if cnt == len(self.body):
                             self.last_line = i.line + self.line - 1
@@ -1211,6 +1215,7 @@ class Melodie(Window):
                 self.have_point = rez[3]
                 self.draw_note(self.first_note[-1][1] + self.first_note[-1][1] * self.have_point)
         con.close()
+        self.do_pause()
 
     def draw_lines_under_note(self, note_x, note_y, x_size, line):
         for i in range(note_y, 131 + (line - 1) * MULTIPLIER, 7):
