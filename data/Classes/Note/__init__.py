@@ -29,7 +29,7 @@ class Note(pygame.sprite.Sprite):
         else:
             self.y = y + size[1] // 2 - 12
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
-        if self.line >= 4:
+        if self.line >= 3:
             self.rect.y = 650
 
     def change_image(self, image, size):
@@ -72,14 +72,12 @@ class Note(pygame.sprite.Sprite):
         self.line -= 1
         if self.line == 0:
             self.rect.y = -100
-        elif self.line == 3:
-            self.rect.y = self.y + 2 * MULTIPLIER
-        elif 1 <= self.line <= 3:
+        elif 1 <= self.line <= 2:
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
 
     def do_down(self):
         self.line += 1
-        if self.line == 4:
+        if self.line == 3:
             self.rect.y = 650
-        elif 1 <= self.line <= 3:
+        elif 1 <= self.line <= 2:
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER

@@ -20,15 +20,15 @@ class Line:
         if self.line == 0:
             self.draw_start = (-10, -10)
             self.draw_stop = (-10, -10)
-        if 1 <= self.line <= 3:
+        if 1 <= self.line <= 2:
             self.draw_start = (self.start[0], self.start[1] + (self.line - 1) * MULTIPLIER)
             self.draw_stop = (self.stop[0], self.stop[1] + (self.line - 1) * MULTIPLIER)
 
     def do_down(self):
         self.line += 1
-        if self.line == 4:
+        if self.line == 3:
             self.draw_start = (650, 650)
             self.draw_stop = (650, 650)
-        elif 1 <= self.line <= 3:
+        elif 1 <= self.line <= 2:
             self.draw_start = (self.start[0], self.start[1] + (self.line - 1) * MULTIPLIER)
             self.draw_stop = (self.stop[0], self.stop[1] + (self.line - 1) * MULTIPLIER)

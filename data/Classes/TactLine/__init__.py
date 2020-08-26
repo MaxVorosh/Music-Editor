@@ -16,12 +16,12 @@ class TactLine(pygame.sprite.Sprite):
         self.line -= 1
         if self.line == 0:
             self.rect.y = -100
-        elif 1 <= self.line <= 3:
+        elif 1 <= self.line <= 2:
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
 
     def do_down(self):
         self.line += 1
-        if self.line == 4:
+        if self.line == 3:
             self.rect.y = 650
-        elif 1 <= self.line <= 3:
+        elif 1 <= self.line <= 2:
             self.rect.y = self.y + (self.line - 1) * MULTIPLIER
