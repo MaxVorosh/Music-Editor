@@ -129,6 +129,9 @@ class Melodie(Window):
                         elif self.stage == 4:
                             self.stage = 3
                             self.down = 0
+                            if self.sharps == 0 and self.flats == 0:
+                                self.stage = 0
+                                self.draw_sharp_and_flat_symb()
                         elif self.stage == 3:
                             if self.sharps == 0 and self.flats == 0:
                                 self.stage = 0
