@@ -553,9 +553,9 @@ class Melodie(Window):
                     self.line_break(len(self.body), n.line + self.line - 1)
                 self.last_line = max(self.last_line, n.line + self.line - 1)
                 if n.up:
-                    self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size, n.line)
+                    self.draw_lines_under_note(self.note_x[-1], n.y + (n.line - 1) * MULTIPLIER + size[1] - 4, line_size, n.line)
                 else:
-                    self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size, n.line)
+                    self.draw_lines_under_note(self.note_x[-1], n.y + (n.line - 1) * MULTIPLIER + 7, line_size, n.line)
         if self.body[0]:
             self.body.append(data)
         else:
@@ -795,7 +795,6 @@ class Melodie(Window):
                 n = Note(name, self.points * 11 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                         len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11,
                          y + add, size, fl, line, 1)
-
                 self.note_group.add(n)
                 if fl:
                     self.note_y.append(n.rect.y)
@@ -803,12 +802,6 @@ class Melodie(Window):
                     if line < n.line:
                         self.line_break(cnt, n.line)
                         line = n.line
-                    if need_line:
-                        if n.up:
-                            self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + size[1] - 4, line_size,
-                                                       n.line)
-                        else:
-                            self.draw_lines_under_note(self.note_x[-1], self.note_y[-1] + 7, line_size, n.line)
                 if note[4]:
                     p = Note('point', self.points * 11 + 95 + (self.sharps + self.flats) * 15 + 60 + (
                             len(self.note_group) - 1 - self.symb - self.points) * 38 + self.symb * 11 - 12,
@@ -818,6 +811,12 @@ class Melodie(Window):
                         line = p.line
                         self.line_break(cnt, line)
                     self.points += 1
+                if fl and need_line:
+                    if n.up:
+                        self.draw_lines_under_note(self.note_x[-1], n.y + (n.line - 1) * MULTIPLIER + size[1] - 4, line_size,
+                                                   n.line)
+                    else:
+                        self.draw_lines_under_note(self.note_x[-1], n.y + (n.line - 1) * MULTIPLIER + 7, line_size, n.line)
                 if note[1] == '#' or note[1] == 'b' or note[1] == '|':
                     self.symb += 1
                 if self.weight == self.up / self.down:

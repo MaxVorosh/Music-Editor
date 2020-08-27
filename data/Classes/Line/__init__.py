@@ -11,6 +11,9 @@ class Line:
         self.line = line
         self.draw_start = (self.start[0], self.start[1] + (self.line - 1) * MULTIPLIER)
         self.draw_stop = (self.stop[0], self.stop[1] + (self.line - 1) * MULTIPLIER)
+        if self.line > 2:
+            self.draw_start = (650, 650)
+            self.draw_stop = (650, 650)
 
     def draw(self):
         pygame.draw.line(self.screen, pygame.Color('black'), self.draw_start, self.draw_stop, self.width)

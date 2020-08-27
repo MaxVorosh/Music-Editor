@@ -11,6 +11,8 @@ class TactLine(pygame.sprite.Sprite):
         self.y = y
         self.line = line - plane + 1
         self.rect.y = y + (self.line - 1) * MULTIPLIER
+        if self.line > 2:
+            self.rect.y = 650
 
     def do_up(self):
         self.line -= 1
